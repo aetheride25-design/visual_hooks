@@ -93,6 +93,7 @@ export const tarjetaCierre: EffectDef<Props> = {
   description: '"Próximo: … →" más tu @usuario. Todo el texto es editable.',
   usesMedia: false,
   defaultDurationSec: 3,
+  defaultAt: 'end',
   defaults: {
     kicker: 'Próximo',
     next: 'Le pongo subtítulos automáticos',

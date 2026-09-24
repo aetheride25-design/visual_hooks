@@ -3,6 +3,7 @@ import type { PlayerRef } from '@remotion/player';
 import { aurora, paletteColors, type PaletteColor } from '../src/brand.ts';
 import type { EffectDef, MediaRef, ParamDef } from '../src/lib/types.ts';
 import { editWord, formatMs, toSrt, toVtt, type CaptionWord } from '../src/lib/captions.ts';
+import { compatibility, formatDuration, onVideoOf, tagsOf } from '../src/lib/timeline.ts';
 import {
   cancelExport,
   getExport,
@@ -63,11 +64,17 @@ export const MediaPanel: React.FC<{
             {m.kind === 'video' ? (
               <video className="thumb" src={`${m.src}#t=0.5`} muted preload="metadata" />
             ) : m.kind === 'audio' ? (
-              <span className="thumb demo">🎙</span>
+              <span className="thumb demo">🎵</span>
             ) : (
               <img className="thumb" src={m.src} alt="" />
             )}
-            <span title={m.name}>{m.name}</span>
+            <span className="media-name">
+              <span title={m.name}>{m.name}</span>
+              <small>
+                {m.kind === 'video' ? '🎬 Video' : m.kind === 'audio' ? '🎵 Audio' : '🖼 Imagen'}
+                {m.durationSec ? ` · ${formatDuration(m.durationSec)}` : ''}
+              </small>
+            </span>
           </button>
         ))}
       </div>
@@ -80,26 +87,45 @@ export const MediaPanel: React.FC<{
 export const EffectList: React.FC<{
   effects: EffectDef<any>[];
   selected: string;
+  /** Lo que elegiste a la izquierda: apaga los efectos que no funcionan con eso. */
+  media: MediaRef | null;
   onSelect: (id: string) => void;
-}> = ({ effects, selected, onSelect }) => {
-  const group = (g: EffectDef['group'], title: string) => (
+}> = ({ effects, selected, media, onSelect }) => {
+  const group = (g: EffectDef['group'], title: string | null, hint?: string) => (
     <>
-      <h3>{title}</h3>
+      {title && <h3>{title}</h3>}
+      {hint && <p className="group-hint">{hint}</p>}
       {effects
         .filter((e) => e.group === g)
-        .map((e) => (
-          <button key={e.id} className={`effect ${selected === e.id ? 'on' : ''}`} onClick={() => onSelect(e.id)}>
-            <strong>{e.name}</strong>
-            <span>{e.description}</span>
-          </button>
-        ))}
+        .map((e) => {
+          const onVideo = onVideoOf(e);
+          const blocked = compatibility(onVideo, e.group, media);
+          return (
+            <button
+              key={e.id}
+              className={`effect ${selected === e.id ? 'on' : ''} ${blocked ? 'off' : ''}`}
+              disabled={!!blocked}
+              title={blocked ?? undefined}
+              onClick={() => onSelect(e.id)}
+            >
+              <strong>{e.name}</strong>
+              <span className="tags">
+                {tagsOf(onVideo, e.group).map((t) => (
+                  <em key={t}>{t}</em>
+                ))}
+              </span>
+              <span>{blocked ?? e.description}</span>
+            </button>
+          );
+        })}
     </>
   );
   return (
     <section className="panel effects">
-      {group('hook', 'Hooks visuales · 0–2 s')}
-      {group('apoyo', 'Efectos de apoyo')}
-      {group('pieza', 'Piezas animadas')}
+      {group('base', null)}
+      {group('hook', 'Hooks visuales · 0–2 s', 'Van en un tramo de tu video (al inicio, de entrada).')}
+      {group('apoyo', 'Efectos de apoyo', 'Tarjetas encima de tu video en el segundo que elijas, o formatos que duran todo el video.')}
+      {group('pieza', 'Piezas animadas', 'Clips sueltos: no van sobre un video.')}
     </section>
   );
 };
@@ -213,9 +239,6 @@ export const Field: React.FC<{
         </label>
       );
     }
-    case 'captions':
-      // Tiene su propio panel (CaptionsEditor): necesita el video elegido y la vista previa.
-      return null;
   }
 };
 
@@ -399,12 +422,92 @@ export const FrameBar: React.FC<{ player: React.RefObject<PlayerRef | null>; tot
   );
 };
 
+/* ---------- Línea de tiempo: dónde cae el efecto dentro de tu video ---------- */
+
+export const TimelineBar: React.FC<{
+  player: React.RefObject<PlayerRef | null>;
+  totalSec: number;
+  startSec: number;
+  effectSec: number;
+  fps: number;
+  label: string;
+  /** Falso si el efecto dura todo el video (no hay tramo que mover). */
+  movable: boolean;
+  onMove: (startSec: number) => void;
+}> = ({ player, totalSec, startSec, effectSec, fps, label, movable, onMove }) => {
+  const [frame, setFrame] = useState(0);
+  const track = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; start: number } | null>(null);
+  useEffect(() => {
+    const p = player.current;
+    if (!p) return;
+    const onFrame = (e: { detail: { frame: number } }) => setFrame(e.detail.frame);
+    p.addEventListener('frameupdate', onFrame);
+    p.addEventListener('seeked', onFrame);
+    return () => {
+      p.removeEventListener('frameupdate', onFrame);
+      p.removeEventListener('seeked', onFrame);
+    };
+  }, [player.current]);
+
+  const pct = (s: number) => `${(s / totalSec) * 100}%`;
+  const secAt = (clientX: number) => {
+    const box = track.current!.getBoundingClientRect();
+    return Math.min(totalSec, Math.max(0, ((clientX - box.left) / box.width) * totalSec));
+  };
+  const seek = (sec: number) => {
+    player.current?.pause();
+    player.current?.seekTo(Math.round(sec * fps));
+  };
+
+  return (
+    <div className="timeline">
+      <div ref={track} className="track" onPointerDown={(e) => seek(secAt(e.clientX))}>
+        <div
+          className={`span ${movable ? 'movable' : ''}`}
+          style={{ left: pct(startSec), width: pct(effectSec) }}
+          title={movable ? 'Arrástralo para mover el efecto' : undefined}
+          onPointerDown={(e) => {
+            if (!movable) return;
+            e.stopPropagation();
+            (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            drag.current = { x: e.clientX, start: startSec };
+            player.current?.pause();
+          }}
+          onPointerMove={(e) => {
+            if (!drag.current) return;
+            const box = track.current!.getBoundingClientRect();
+            const next = drag.current.start + ((e.clientX - drag.current.x) / box.width) * totalSec;
+            onMove(Math.round(Math.min(totalSec - effectSec, Math.max(0, next)) * 10) / 10);
+          }}
+          onPointerUp={() => {
+            if (drag.current) seek(startSec);
+            drag.current = null;
+          }}
+        >
+          <span>{label}</span>
+        </div>
+        <div className="playhead" style={{ left: pct(frame / fps) }} />
+      </div>
+      <div className="ticks">
+        <span>0 s</span>
+        <span>tu video · {totalSec.toFixed(1)} s</span>
+      </div>
+    </div>
+  );
+};
+
 /* ---------- Export ---------- */
 
-const FORMATS: { value: ExportFormat; label: string; hint: string }[] = [
-  { value: 'mp4', label: 'MP4', hint: 'Con fondo, para subir directo' },
-  { value: 'prores', label: 'ProRes 4444', hint: 'Transparente, para DaVinci' },
-  { value: 'png', label: 'Secuencia PNG', hint: 'Transparente, un PNG por cuadro' },
+const FORMATS: { value: ExportFormat; label: string; hint: string; timedHint: string }[] = [
+  { value: 'mp4', label: 'MP4', hint: 'Con fondo, para subir directo', timedHint: 'Tu video completo con el efecto y su audio' },
+  {
+    value: 'prores',
+    label: 'ProRes 4444',
+    hint: 'Transparente, para DaVinci',
+    timedHint: 'Sin tu video: efecto y subtítulos transparentes, en su segundo exacto',
+  },
+  { value: 'png', label: 'Secuencia PNG', hint: 'Transparente, un PNG por cuadro', timedHint: 'Igual que ProRes, un PNG por cuadro' },
 ];
 
 export const ExportPanel: React.FC<{
@@ -412,7 +515,9 @@ export const ExportPanel: React.FC<{
   effectName: string;
   props: Record<string, unknown>;
   size: { width: number; height: number };
-}> = ({ effectId, effectName, props, size }) => {
+  /** "Aplicar a mi video": cambia lo que explica cada formato. */
+  timed: boolean;
+}> = ({ effectId, effectName, props, size, timed }) => {
   const [format, setFormat] = useState<ExportFormat>('mp4');
   // Guardamos de qué efecto es cada export: al cambiar de efecto el resultado anterior sigue visible, pero rotulado.
   const [job, setJob] = useState<(JobState & { effectName: string }) | null>(null);
@@ -444,7 +549,7 @@ export const ExportPanel: React.FC<{
         {FORMATS.map((f) => (
           <button key={f.value} className={format === f.value ? 'on' : ''} onClick={() => setFormat(f.value)}>
             <strong>{f.label}</strong>
-            <span>{f.hint}</span>
+            <span>{timed ? f.timedHint : f.hint}</span>
           </button>
         ))}
       </div>
