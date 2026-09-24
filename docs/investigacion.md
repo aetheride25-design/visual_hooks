@@ -91,7 +91,7 @@ No revisé a Matt Wolfe, Pieter Levels, Tibo, CodeWithHarry, Código Facilito ni
 | **Tarjeta de texto** | Una frase grande a pantalla completa, con la palabra clave en serif itálica | 1–2 s | giro | Baena [CUADROS] | baja | 🧩 `tarjeta-texto` |
 | **Tarjeta de cierre** | "Próximo: … →" y tu @usuario | 2–3 s | cierre | DotCSV (versión "vídeo completo") [CUADROS] | baja | 🧩 `tarjeta-cierre` |
 | **Lista misteriosa** | Cartas con "?" que se voltean una por una | 1 s + 0.5 s por carta | gancho / giro | Baena ("Plugin 1–4 ?") [CUADROS] | media | 🧩 `lista-misterio` |
-| Subtítulos palabra por palabra | 1–3 palabras; la clave cambia de color o pasa a serif itálica | cada 0.25–0.5 s | todo | Baena, midudev, Prime, Marc Lou [CUADROS] | media | pendiente (ver README) |
+| Subtítulos palabra por palabra | 1–3 palabras; la clave cambia de color o pasa a serif itálica | cada 0.25–0.5 s | todo | Baena, midudev, Prime, Marc Lou [CUADROS] | media | 🧩 `subtitulos` |
 
 ---
 

@@ -1,6 +1,14 @@
 import type React from 'react';
 
-export type MediaRef = { src: string; kind: 'video' | 'image'; name: string; width: number; height: number };
+export type MediaRef = {
+  src: string;
+  kind: 'video' | 'image';
+  name: string;
+  width: number;
+  height: number;
+  /** Duración en segundos (solo videos). */
+  durationSec?: number;
+};
 
 /** Props que reciben todos los hooks y efectos, además de los suyos. */
 export type BaseProps = {
@@ -20,7 +28,9 @@ export type ParamDef =
   | { key: string; label: string; type: 'select'; options: { value: string; label: string }[] }
   | { key: string; label: string; type: 'boolean' }
   /** Un segundo video o imagen (p. ej. el "después"). */
-  | { key: string; label: string; type: 'media' };
+  | { key: string; label: string; type: 'media' }
+  /** Palabras con su tiempo, sacadas de tu voz con Whisper (se editan en la app). */
+  | { key: string; label: string; type: 'captions' };
 
 export type EffectGroup = 'hook' | 'apoyo' | 'pieza';
 
@@ -35,6 +45,8 @@ export type EffectDef<P extends Record<string, unknown> = Record<string, unknown
   /** Cómo se llama tu video principal en este efecto (p. ej. "Toma de abajo"); se muestra junto a sus parámetros. */
   mediaLabel?: string;
   defaultDurationSec: number;
+  /** Dura lo mismo que tu video y va siempre a velocidad normal (p. ej. los subtítulos). */
+  fullLength?: boolean;
   defaults: P;
   params: ParamDef[];
   component: React.FC<P & BaseProps>;

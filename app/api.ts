@@ -1,3 +1,4 @@
+import type { CaptionWord } from '../src/lib/captions.ts';
 import type { MediaRef } from '../src/lib/types.ts';
 
 export type ExportFormat = 'mp4' | 'prores' | 'png';
@@ -34,3 +35,22 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
 export const getExport = (id: string) => fetch(`/api/export/${id}`).then((r) => ok<JobState>(r));
 export const cancelExport = (id: string) => fetch(`/api/export/${id}/cancel`, { method: 'POST' });
 export const openExports = () => fetch('/api/open-exports', { method: 'POST' });
+
+export type TranscribeModel = 'base' | 'small' | 'medium';
+export type TranscribeLang = 'es' | 'en' | 'auto';
+export type TranscribeState = {
+  id: string;
+  status: 'instalando' | 'descargando' | 'transcribiendo' | 'listo' | 'error';
+  progress: number;
+  words: CaptionWord[] | null;
+  error: string | null;
+};
+
+export const startTranscribe = (name: string, model: TranscribeModel, lang: TranscribeLang) =>
+  fetch('/api/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, model, lang }),
+  }).then((r) => ok<{ id: string }>(r));
+
+export const getTranscribe = (id: string) => fetch(`/api/transcribe/${id}`).then((r) => ok<TranscribeState>(r));

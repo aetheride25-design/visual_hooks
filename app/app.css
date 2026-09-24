@@ -147,8 +147,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); }
 .swatch.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--base), 0 0 16px rgba(255,255,255,0.25); }
 
-.segmented { display: flex; gap: 4px; background: var(--base); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
-.segmented button { flex: 1; padding: 6px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); }
+.segmented { display: flex; flex-wrap: wrap; gap: 4px; background: var(--base); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+.segmented button { flex: 1 0 auto; padding: 6px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); }
 .segmented button.on { background: var(--surface-2); color: var(--text); box-shadow: inset 0 1px 0 var(--light); }
 
 .formats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
@@ -171,3 +171,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .job.error { color: var(--red); }
 .bar { height: 6px; border-radius: 3px; background: var(--base); overflow: hidden; }
 .bar div { height: 100%; background: linear-gradient(90deg, var(--mint), var(--blue)); transition: width 0.3s; }
+
+/* Subtítulos: transcripción y corrección de palabras */
+.captions small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.captions .primary:disabled { opacity: 0.45; box-shadow: none; }
+.words {
+  display: flex; flex-direction: column; gap: 4px; max-height: 280px; overflow-y: auto;
+  padding: 6px; border-radius: 10px; background: var(--base); border: 1px solid var(--line);
+}
+.word { display: flex; align-items: center; gap: 8px; }
+.word .link { margin: 0; width: 46px; flex: none; font-size: 11px; font-variant-numeric: tabular-nums; text-align: left; }
+.word input {
+  flex: 1; min-width: 0; padding: 4px 8px; border-radius: 7px; color: var(--text); font: inherit; font-size: 13px;
+  background: transparent; border: 1px solid transparent; outline: none;
+}
+.word input:hover { border-color: var(--line); }
+.word input:focus { border-color: var(--mint); background: var(--surface-2); }

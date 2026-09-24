@@ -11,6 +11,12 @@ importers:
       '@remotion/bundler':
         specifier: 4.0.527
         version: 4.0.527(postcss@8.5.28)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@remotion/fonts':
+        specifier: 4.0.527
+        version: 4.0.527(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@remotion/install-whisper-cpp':
+        specifier: 4.0.527
+        version: 4.0.527
       '@remotion/media':
         specifier: 4.0.527
         version: 4.0.527(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -344,6 +350,12 @@ packages:
     resolution: {integrity: sha512-Mhgp24hdB4IK94BrPtqySS3/hpQacMeT76PEXcKO3E3k3Cer8uJMaODtuCUrPqZmNZzYX+pW3H9gW685tjhYGw==}
     cpu: [x64]
     os: [win32]
+
+  '@remotion/fonts@4.0.527':
+    resolution: {integrity: sha512-peBD1sYViDQcLWpi4FyixrzhuB7MGpE7ZB4n0Q6XsCLhNUUjy9hOPchtW5F3BAi+eLRAC8qlL73+GDklY2LMRw==}
+
+  '@remotion/install-whisper-cpp@4.0.527':
+    resolution: {integrity: sha512-minwMOHwz8s20jzXzIbqnrpbIk6XxyYkhk3ZFVVvMtcL4lWOiUKW1Qi+vPt7FvX3FdmH6OOS0XSKKMKsMFaq6w==}
 
   '@remotion/licensing@4.0.527':
     resolution: {integrity: sha512-AXprmcxs3kxdmuOWLtlOUE7Qs5UlEFz6el8WGMZbNiM1t1sb2MTL00zzgc1yRs3o3GhM1GFKFn9LqJOQLLzQJw==}
@@ -1715,6 +1727,17 @@ snapshots:
 
   '@remotion/compositor-win32-x64-msvc@4.0.527':
     optional: true
+
+  '@remotion/fonts@4.0.527(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      remotion: 4.0.527(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+    transitivePeerDependencies:
+      - react
+      - react-dom
+
+  '@remotion/install-whisper-cpp@4.0.527':
+    dependencies:
+      '@remotion/captions': 4.0.527
 
   '@remotion/licensing@4.0.527': {}
 
