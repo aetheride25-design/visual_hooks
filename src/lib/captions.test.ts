@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { activeWordIndex, displayText, editWord, formatMs, pageAt, paginate, wordsFromTokens, type CaptionWord } from './captions.ts';
+import { activeWordIndex, displayText, editWord, formatMs, pageAt, paginate, toSrt, toVtt, wordsFromTokens, type CaptionWord } from './captions.ts';
 
 const w = (text: string, startMs: number, endMs = startMs + 200): CaptionWord => ({ text, startMs, endMs });
 
@@ -70,4 +70,15 @@ test('displayText y formatMs', () => {
   assert.equal(displayText('¿sí?', true, true), '¿SÍ?');
   assert.equal(displayText('hola.', false, false), 'hola.');
   assert.equal(formatMs(65300), '1:05.3');
+});
+
+test('toSrt y toVtt cortan frases y escriben los tiempos de cada formato', () => {
+  const words = [w('Hola,', 0, 300), w('esto', 400, 600), w('es', 600, 700), w('una', 3700, 3900), w('prueba.', 3900, 4200)];
+  assert.equal(
+    toSrt(words),
+    '1\n00:00:00,000 --> 00:00:00,400\nHola,\n\n' +
+      '2\n00:00:00,400 --> 00:00:01,100\nesto es\n\n' +
+      '3\n00:00:03,700 --> 00:00:04,600\nuna prueba.\n',
+  );
+  assert.equal(toVtt(words, 7, 3_600_000).split('\n').slice(0, 3).join('\n'), 'WEBVTT\n\n01:00:00.000 --> 01:00:00.400');
 });

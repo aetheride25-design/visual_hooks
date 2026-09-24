@@ -34,7 +34,8 @@ export const App: React.FC = () => {
         ...baseDefaults(def),
         ...def.defaults,
         ...own,
-        media: selectedMedia,
+        // Un audio solo sirve en los efectos que lo aceptan (subtítulos); los demás muestran la pantalla de ejemplo.
+        media: selectedMedia?.kind === 'audio' && !def.acceptsAudio ? null : selectedMedia,
         fps,
         speed,
         transparent,
@@ -163,6 +164,7 @@ export const App: React.FC = () => {
                   video={selectedMedia}
                   words={props[p.key] as CaptionWord[]}
                   wordsFor={String(props.wordsFor ?? '')}
+                  offsetMs={Number(props.offsetMs ?? 0)}
                   onChange={(words, wordsFor) =>
                     setOverrides((o) => ({ ...o, [effectId]: { ...o[effectId], [p.key]: words, wordsFor } }))
                   }
@@ -184,7 +186,8 @@ export const App: React.FC = () => {
           <h2>Tiempo</h2>
           {def.fullLength ? (
             <p className="desc">
-              Dura lo mismo que tu video ({Number(props.durationSec).toFixed(1)} s) y va a velocidad normal.
+              Dura lo mismo que tu {selectedMedia?.kind === 'audio' ? 'audio' : 'video'} ({Number(props.durationSec).toFixed(1)} s) y va
+              a velocidad normal.
             </p>
           ) : (
             <>

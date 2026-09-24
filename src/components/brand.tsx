@@ -109,7 +109,8 @@ const Placeholder: React.FC = () => {
 export const PLACEHOLDER_SIZE = { width: 1920, height: 1080 };
 
 /** Tamaño real del medio (o del marcador de posición si aún no subiste nada). */
-export const sizeOf = (media: MediaRef | null) => (media ? { width: media.width, height: media.height } : PLACEHOLDER_SIZE);
+export const sizeOf = (media: MediaRef | null) =>
+  media && media.kind !== 'audio' ? { width: media.width, height: media.height } : PLACEHOLDER_SIZE;
 
 /** Dónde queda tu captura dentro de `box` (en px del cuadro 1080×1920). */
 export const mediaRect = (media: MediaRef | null, box: Rect, fit: Fit): Rect => {
@@ -127,7 +128,8 @@ export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boo
   loop = false,
   muted = true,
 }) => {
-  if (!media) {
+  // Un audio no tiene imagen: se ve la pantalla de ejemplo (los subtítulos lo dibujan aparte).
+  if (!media || media.kind === 'audio') {
     return (
       <div
         style={{

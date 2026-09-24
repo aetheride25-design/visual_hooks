@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { PlayerRef } from '@remotion/player';
 import { aurora, paletteColors, type PaletteColor } from '../src/brand.ts';
 import type { EffectDef, MediaRef, ParamDef } from '../src/lib/types.ts';
-import { editWord, formatMs, type CaptionWord } from '../src/lib/captions.ts';
+import { editWord, formatMs, toSrt, toVtt, type CaptionWord } from '../src/lib/captions.ts';
 import {
   cancelExport,
   getExport,
@@ -30,7 +30,7 @@ export const MediaPanel: React.FC<{
   const input = useRef<HTMLInputElement>(null);
   return (
     <section className="panel">
-      <h2>Tu video o imagen</h2>
+      <h2>Tu video, imagen o audio</h2>
       <div
         className={`drop ${over ? 'over' : ''}`}
         onDragOver={(e) => (e.preventDefault(), setOver(true))}
@@ -47,7 +47,7 @@ export const MediaPanel: React.FC<{
         <input
           ref={input}
           type="file"
-          accept="video/*,image/*"
+          accept="video/*,image/*,audio/*"
           multiple
           hidden
           onChange={(e) => onFiles([...(e.target.files ?? [])])}
@@ -62,6 +62,8 @@ export const MediaPanel: React.FC<{
           <button key={m.src} className={`media-item ${selected?.src === m.src ? 'on' : ''}`} onClick={() => onSelect(m)}>
             {m.kind === 'video' ? (
               <video className="thumb" src={`${m.src}#t=0.5`} muted preload="metadata" />
+            ) : m.kind === 'audio' ? (
+              <span className="thumb demo">🎙</span>
             ) : (
               <img className="thumb" src={m.src} alt="" />
             )}
@@ -231,15 +233,17 @@ export const CaptionsEditor: React.FC<{
   video: MediaRef | null;
   words: CaptionWord[];
   wordsFor: string;
+  offsetMs: number;
   onChange: (words: CaptionWord[], wordsFor: string) => void;
   onSeek: (ms: number) => void;
-}> = ({ video, words, wordsFor, onChange, onSeek }) => {
+}> = ({ video, words, wordsFor, offsetMs, onChange, onSeek }) => {
   const [model, setModel] = useState<TranscribeModel>('small');
   const [lang, setLang] = useState<TranscribeLang>('es');
   const [job, setJob] = useState<TranscribeState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const busy = job !== null && job.status !== 'listo' && job.status !== 'error';
-  const isVideo = video?.kind === 'video';
+  const isAudio = video?.kind === 'audio';
+  const hasVoice = video?.kind === 'video' || isAudio;
 
   useEffect(() => {
     if (!busy || !job) return;
@@ -268,7 +272,18 @@ export const CaptionsEditor: React.FC<{
     }
   };
 
-  const mine = isVideo && wordsFor === video.name;
+  const mine = hasVoice && wordsFor === video.name;
+
+  /** Descarga la transcripción como archivo de subtítulos, con el mismo "Adelantar / atrasar" de la vista previa. */
+  const download = (format: 'srt' | 'vtt') => {
+    if (!video) return;
+    const text = format === 'srt' ? toSrt(words, 7, offsetMs) : toVtt(words, 7, offsetMs);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    a.download = `${video.name.replace(/\.[^.]+$/, '')}.${format}`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
   return (
     <div className="field captions">
       <span>Transcripción</span>
@@ -298,11 +313,21 @@ export const CaptionsEditor: React.FC<{
           </button>
         ))}
       </div>
-      <button className="primary" disabled={!isVideo || busy} onClick={run}>
-        {busy ? 'Transcribiendo…' : mine ? '🎙 Transcribir de nuevo' : '🎙 Transcribir mi video'}
+      <button className="primary" disabled={!hasVoice || busy} onClick={run}>
+        {busy ? 'Transcribiendo…' : mine ? '🎙 Transcribir de nuevo' : `🎙 Transcribir mi ${isAudio ? 'audio' : 'video'}`}
       </button>
-      {!isVideo && <small>Elige tu video con voz en el panel izquierdo. Mientras tanto ves una frase de ejemplo.</small>}
-      {isVideo && wordsFor && !mine && <small>Estas palabras son de otro video ({wordsFor}). Transcribe este.</small>}
+      {!hasVoice && <small>Elige tu video o audio con voz en el panel izquierdo. Mientras tanto ves una frase de ejemplo.</small>}
+      {hasVoice && wordsFor && !mine && <small>Estas palabras son de otro archivo ({wordsFor}). Transcribe este.</small>}
+      {mine && words.length > 0 && (
+        <div className="downloads">
+          <button className="primary ghost" onClick={() => download('srt')} title="Para CapCut, DaVinci o Premiere">
+            ⬇ SRT
+          </button>
+          <button className="primary ghost" onClick={() => download('vtt')} title="Para YouTube o la web">
+            ⬇ VTT
+          </button>
+        </div>
+      )}
       {job && job.status !== 'listo' && (
         <div className="job">
           <div className="bar">

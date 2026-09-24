@@ -58,5 +58,7 @@ test('transcodeArgs conserva el audio (lo necesitan los subtítulos)', () => {
 test('mediaKind distingue video, imagen y otros', () => {
   assert.equal(mediaKind('a.MP4'), 'video');
   assert.equal(mediaKind('a.webp'), 'image');
+  assert.equal(mediaKind('voz.MP3'), 'audio');
+  assert.equal(mediaKind('voz.m4a'), 'audio');
   assert.equal(mediaKind('a.exe'), null);
 });

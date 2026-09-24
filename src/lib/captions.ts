@@ -100,6 +100,37 @@ export const displayText = (text: string, upper: boolean, stripPunct: boolean): 
   return t;
 };
 
+/** Tiempo de SRT (00:01:05,300) o de VTT (00:01:05.300). */
+const cueTime = (ms: number, sep: ',' | '.'): string => {
+  const t = Math.max(0, Math.round(ms));
+  const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+  return `${pad(Math.floor(t / 3_600_000))}:${pad(Math.floor(t / 60_000) % 60)}:${pad(Math.floor(t / 1000) % 60)}${sep}${pad(t % 1000, 3)}`;
+};
+
+/**
+ * Líneas de subtítulo para editores y YouTube: frases de hasta `maxWords` palabras,
+ * cortadas en la puntuación y en los silencios. `offsetMs` corre todo (igual que "Adelantar / atrasar").
+ */
+const cues = (words: CaptionWord[], maxWords: number, offsetMs: number) =>
+  paginate(words, maxWords).map((p) => ({
+    start: p.startMs + offsetMs,
+    end: p.endMs + offsetMs,
+    text: p.words.map((w) => w.text).join(' '),
+  }));
+
+/** Archivo .srt (CapCut, DaVinci, Premiere). */
+export const toSrt = (words: CaptionWord[], maxWords = 7, offsetMs = 0): string =>
+  cues(words, maxWords, offsetMs)
+    .map((c, i) => `${i + 1}\n${cueTime(c.start, ',')} --> ${cueTime(c.end, ',')}\n${c.text}\n`)
+    .join('\n');
+
+/** Archivo .vtt (YouTube, web). */
+export const toVtt = (words: CaptionWord[], maxWords = 7, offsetMs = 0): string =>
+  'WEBVTT\n\n' +
+  cues(words, maxWords, offsetMs)
+    .map((c) => `${cueTime(c.start, '.')} --> ${cueTime(c.end, '.')}\n${c.text}\n`)
+    .join('\n');
+
 /** Minutos y segundos para mostrar en el editor: 1:05.3 */
 export const formatMs = (ms: number): string => {
   const s = Math.max(0, ms) / 1000;

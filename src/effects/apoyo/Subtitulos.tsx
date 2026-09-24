@@ -4,7 +4,8 @@ import { loadFont } from '@remotion/fonts';
 import bangersUrl from '../../../assets/fonts/bangers-latin.woff2';
 import montserratUrl from '../../../assets/fonts/montserrat-latin.woff2';
 import { aurora, fonts } from '../../brand.ts';
-import { MediaAt, mediaRect } from '../../components/brand.tsx';
+import { Audio } from '@remotion/media';
+import { AuroraBackground, MediaAt, mediaRect } from '../../components/brand.tsx';
 import { clamp01, easeOutBack, easeOutCubic, lerp } from '../../lib/anim.ts';
 import { activeWordIndex, displayText, pageAt, paginate, type CaptionWord } from '../../lib/captions.ts';
 import { FRAME } from '../../lib/frame.ts';
@@ -173,7 +174,8 @@ const wordStyle = (
 /** Subtítulos palabra por palabra sobre tu video, sincronizados con tu voz. */
 const Subtitulos: React.FC<Props & BaseProps> = (p) => {
   // Siempre a velocidad normal: los subtítulos tienen que ir con tu voz.
-  const ms = (useCurrentFrame() / p.fps) * 1000 - p.offsetMs;
+  const frame = useCurrentFrame();
+  const ms = (frame / p.fps) * 1000 - p.offsetMs;
   const def = STYLES[p.captionStyle] ?? STYLES.hormozi;
   const perPage = p.perPage === 'auto' ? def.perPage : Number(p.perPage);
   const color = p.highlight === 'estilo' ? def.color : COLORS[p.highlight];
@@ -185,7 +187,16 @@ const Subtitulos: React.FC<Props & BaseProps> = (p) => {
   return (
     <AbsoluteFill>
       {/* En transparente (para DaVinci) salen solo los subtítulos. */}
-      {!p.transparent && <MediaAt media={p.media} rect={mediaRect(p.media, FRAME, p.fit)} muted={false} />}
+      {!p.transparent &&
+        (p.media?.kind === 'audio' ? (
+          // Solo audio: fondo Aurora con tu voz, listo para subir o para poner encima de otro video.
+          <>
+            <AuroraBackground t={frame / p.fps} />
+            <Audio src={p.media.src} />
+          </>
+        ) : (
+          <MediaAt media={p.media} rect={mediaRect(p.media, FRAME, p.fit)} muted={false} />
+        ))}
       {page && (
         <div
           style={{
@@ -222,10 +233,11 @@ export const subtitulos: EffectDef<Props> = {
   id: 'subtitulos',
   name: 'Subtítulos',
   group: 'apoyo',
-  description: 'Transcribe tu voz con Whisper y pone subtítulos palabra por palabra, al tiempo exacto. 6 estilos virales.',
+  description: 'Transcribe tu voz (de un video o un audio) con Whisper y pone subtítulos palabra por palabra, al tiempo exacto. 6 estilos virales. Exporta también SRT/VTT.',
   usesMedia: true,
-  mediaLabel: 'Tu video con voz',
+  mediaLabel: 'Tu video o audio con voz',
   fullLength: true,
+  acceptsAudio: true,
   defaultDurationSec: 4.5,
   defaults: {
     words: demoWords,
