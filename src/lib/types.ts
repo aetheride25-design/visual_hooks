@@ -2,11 +2,11 @@ import type React from 'react';
 
 export type MediaRef = {
   src: string;
-  kind: 'video' | 'image';
+  kind: 'video' | 'image' | 'audio';
   name: string;
   width: number;
   height: number;
-  /** Duración en segundos (solo videos). */
+  /** Duración en segundos (videos y audios). Un audio tiene ancho y alto 0. */
   durationSec?: number;
 };
 
@@ -47,6 +47,8 @@ export type EffectDef<P extends Record<string, unknown> = Record<string, unknown
   defaultDurationSec: number;
   /** Dura lo mismo que tu video y va siempre a velocidad normal (p. ej. los subtítulos). */
   fullLength?: boolean;
+  /** Acepta un audio solo (sin imagen) como medio principal. Los demás efectos ven la pantalla de ejemplo. */
+  acceptsAudio?: boolean;
   defaults: P;
   params: ParamDef[];
   component: React.FC<P & BaseProps>;

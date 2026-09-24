@@ -187,3 +187,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .word input:hover { border-color: var(--line); }
 .word input:focus { border-color: var(--mint); background: var(--surface-2); }
+
+.captions .downloads {
+  display: flex;
+  gap: 8px;
+}
+.captions .downloads button {
+  flex: 1;
+}

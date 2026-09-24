@@ -114,7 +114,7 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
   if (p === '/api/upload' && req.method === 'POST') {
     const name = uniqueName(safeName(decodeURIComponent(String(req.headers['x-filename'] ?? ''))));
     const kind = mediaKind(name);
-    if (!kind) return json(res, 400, { error: 'Solo videos (mp4, mov, webm, mkv) o imágenes (png, jpg, webp, gif).' }), true;
+    if (!kind) return json(res, 400, { error: 'Solo videos (mp4, mov, webm, mkv), imágenes (png, jpg, webp, gif) o audios (mp3, wav, m4a, ogg, flac).' }), true;
     const file = path.join(MEDIA_DIR, name);
     await pipeline(req, fs.createWriteStream(file));
     try {
@@ -145,7 +145,8 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
     const body = await readJson(req);
     const name = path.basename(String(body.name ?? ''));
     const file = path.join(MEDIA_DIR, name);
-    if (mediaKind(name) !== 'video' || !fs.existsSync(file)) return json(res, 400, { error: 'Elige un video con voz.' }), true;
+    const kind = mediaKind(name);
+    if ((kind !== 'video' && kind !== 'audio') || !fs.existsSync(file)) return json(res, 400, { error: 'Elige un video o audio con voz.' }), true;
     const model = WHISPER_MODELS.includes(body.model) ? (body.model as WhisperModel) : 'small';
     const lang: TranscribeLang = ['es', 'en', 'auto'].includes(body.lang) ? body.lang : 'es';
     return json(res, 200, { id: startTranscription(file, model, lang).id }), true;
