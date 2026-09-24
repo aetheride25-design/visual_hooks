@@ -1,5 +1,5 @@
-import React from 'react';
-import { AbsoluteFill, Img } from 'remotion';
+import React, { createContext, useContext } from 'react';
+import { AbsoluteFill, Img, useCurrentFrame } from 'remotion';
 import { Video } from '@remotion/media';
 import { aurora, fonts } from '../brand.ts';
 import { fitRect, type Fit, type Rect } from '../lib/layout.ts';
@@ -106,7 +106,12 @@ export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boo
   loop = false,
   muted = true,
 }) => {
-  // Un audio no tiene imagen: se ve la pantalla de ejemplo (los subtítulos lo dibujan aparte).
+  // Dentro de un efecto aplicado a tu video, tu video sigue en el segundo en que va (no vuelve a empezar).
+  const clock = useContext(MainVideoClock);
+  const localFrame = useCurrentFrame();
+  const trimBefore = clock && media?.src === clock.src ? Math.max(0, clock.frame - localFrame) : undefined;
+
+  // Un audio no tiene imagen: se ve la pantalla de ejemplo.
   if (!media || media.kind === 'audio') {
     return (
       <div
@@ -124,11 +129,18 @@ export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boo
   }
   const style: React.CSSProperties = { width: '100%', height: '100%', display: 'block' };
   return media.kind === 'video' ? (
-    <Video src={media.src} muted={muted} loop={loop} objectFit="fill" style={style} />
+    <Video src={media.src} muted={muted} loop={loop} trimBefore={trimBefore} objectFit="fill" style={style} />
   ) : (
     <Img src={media.src} style={{ ...style, objectFit: 'fill' }} />
   );
 };
+
+/**
+ * Reloj de tu video principal cuando el efecto se aplica a un tramo de él: su archivo y el cuadro de tu video
+ * que se está dibujando. Con él, cada <Video> de ese archivo dentro de una <Sequence> se recorta por delante
+ * (trimBefore) justo lo que empezó más tarde esa Sequence, y queda al mismo segundo que tu video de fondo.
+ */
+export const MainVideoClock = createContext<{ src: string; frame: number } | null>(null);
 
 /** Medio ubicado en su rectángulo, en coordenadas del cuadro. */
 export const MediaAt: React.FC<{ media: MediaRef | null; rect: Rect; style?: React.CSSProperties; loop?: boolean; muted?: boolean }> = ({

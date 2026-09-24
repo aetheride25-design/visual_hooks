@@ -172,6 +172,8 @@ export const mitadYMitad: EffectDef<Props> = {
     'Dos tomas, cada una en su mitad de 1080×960: arriba tu animación con fondo transparente y abajo tu video completo con el fondo de marca alrededor.',
   usesMedia: true,
   mediaLabel: 'Toma de abajo (tu video 16:9)',
+  // Es un formato de pantalla, no un hook: dura todo tu video.
+  onVideo: 'full',
   defaultDurationSec: 5,
   defaults: {
     layout: 'mitades',

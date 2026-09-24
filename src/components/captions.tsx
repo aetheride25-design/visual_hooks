@@ -1,16 +1,15 @@
+// Subtítulos palabra por palabra: una capa que va encima de cualquier efecto (o de tu video o audio solo),
+// sincronizada con tu voz. La transcripción sale de Whisper (server/transcribe.ts).
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { loadFont } from '@remotion/fonts';
-import bangersUrl from '../../../assets/fonts/bangers-latin.woff2';
-import montserratUrl from '../../../assets/fonts/montserrat-latin.woff2';
-import { aurora, fonts } from '../../brand.ts';
-import { Audio } from '@remotion/media';
-import { MediaAt, mediaRect } from '../../components/brand.tsx';
-import { clamp01, easeOutBack, easeOutCubic, lerp } from '../../lib/anim.ts';
-import { activeWordIndex, displayText, pageAt, paginate, type CaptionWord } from '../../lib/captions.ts';
-import { FRAME } from '../../lib/frame.ts';
-import type { Fit } from '../../lib/layout.ts';
-import type { BaseProps, EffectDef } from '../../lib/types.ts';
+import bangersUrl from '../../assets/fonts/bangers-latin.woff2';
+import montserratUrl from '../../assets/fonts/montserrat-latin.woff2';
+import { aurora, fonts } from '../brand.ts';
+import { clamp01, easeOutBack, easeOutCubic, lerp } from '../lib/anim.ts';
+import { activeWordIndex, displayText, pageAt, paginate, type CaptionWord } from '../lib/captions.ts';
+import { FRAME } from '../lib/frame.ts';
+import type { ParamDef } from '../lib/types.ts';
 
 // Las fuentes de los estilos virales no vienen con Windows: van en assets/fonts (sin internet, siempre iguales).
 // La vista previa y el render esperan a que carguen antes de dibujar.
@@ -22,9 +21,9 @@ loadFont({ family: bangers, url: bangersUrl, weight: '400' });
 export type CaptionStyle = 'hormozi' | 'beast' | 'karaoke' | 'pop' | 'limpio' | 'editorial';
 type Highlight = 'estilo' | 'amarillo' | 'verde' | 'mint' | 'violet' | 'blue' | 'red';
 
-type Props = {
+export type CaptionsSettings = {
   words: CaptionWord[];
-  /** De qué video salió la transcripción (para avisar si cambias de video). */
+  /** De qué archivo salió la transcripción (para avisar si cambias de video o audio). */
   wordsFor: string;
   captionStyle: CaptionStyle;
   perPage: 'auto' | '1' | '2' | '3' | '4' | '5';
@@ -32,7 +31,6 @@ type Props = {
   heightPct: number;
   size: number;
   offsetMs: number;
-  fit: Fit;
 };
 
 const COLORS: Record<Exclude<Highlight, 'estilo'>, string> = {
@@ -171,11 +169,13 @@ const wordStyle = (
   }
 };
 
-/** Subtítulos palabra por palabra sobre tu video, sincronizados con tu voz. */
-const Subtitulos: React.FC<Props & BaseProps> = (p) => {
-  // Siempre a velocidad normal: los subtítulos tienen que ir con tu voz.
+/**
+ * La capa de subtítulos. Va siempre a velocidad normal y cuenta desde el cuadro 0 de tu video:
+ * tiene que ir con tu voz, esté donde esté el efecto.
+ */
+export const CaptionsLayer: React.FC<{ captions: CaptionsSettings; fps: number }> = ({ captions: p, fps }) => {
   const frame = useCurrentFrame();
-  const ms = (frame / p.fps) * 1000 - p.offsetMs;
+  const ms = (frame / fps) * 1000 - p.offsetMs;
   const def = STYLES[p.captionStyle] ?? STYLES.hormozi;
   const perPage = p.perPage === 'auto' ? def.perPage : Number(p.perPage);
   const color = p.highlight === 'estilo' ? def.color : COLORS[p.highlight];
@@ -183,126 +183,95 @@ const Subtitulos: React.FC<Props & BaseProps> = (p) => {
   const pages = React.useMemo(() => paginate(p.words ?? [], perPage), [p.words, perPage]);
   const page = pageAt(pages, ms);
   const active = page ? activeWordIndex(page, ms) : -1;
+  if (!page) return null;
 
   return (
     <AbsoluteFill>
-      {/* En transparente (para DaVinci) salen solo los subtítulos. */}
-      {!p.transparent &&
-        (p.media?.kind === 'audio' ? (
-          // Solo audio: el fondo animado (lo pone la envoltura) con tu voz, listo para subir o para poner encima de otro video.
-          <>
-            <Audio src={p.media.src} />
-          </>
-        ) : (
-          <MediaAt media={p.media} rect={mediaRect(p.media, FRAME, p.fit)} muted={false} />
+      <div
+        style={{
+          position: 'absolute',
+          left: FRAME.w * 0.08,
+          width: FRAME.w * 0.84,
+          top: (FRAME.h * p.heightPct) / 100,
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'baseline',
+          columnGap: size * 0.28,
+          rowGap: size * 0.1,
+        }}
+      >
+        {page.words.map((w, i) => (
+          <span key={`${page.startMs}-${i}`} style={wordStyle(p.captionStyle, def, color, size, i <= active, i === active, ms - w.startMs, ms - page.startMs)}>
+            {displayText(w.text, def.upper, def.upper)}
+          </span>
         ))}
-      {page && (
-        <div
-          style={{
-            position: 'absolute',
-            left: FRAME.w * 0.08,
-            width: FRAME.w * 0.84,
-            top: (FRAME.h * p.heightPct) / 100,
-            transform: 'translateY(-50%)',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'baseline',
-            columnGap: size * 0.28,
-            rowGap: size * 0.1,
-          }}
-        >
-          {page.words.map((w, i) => (
-            <span key={`${page.startMs}-${i}`} style={wordStyle(p.captionStyle, def, color, size, i <= active, i === active, ms - w.startMs, ms - page.startMs)}>
-              {displayText(w.text, def.upper, def.upper)}
-            </span>
-          ))}
-        </div>
-      )}
+      </div>
     </AbsoluteFill>
   );
 };
 
-/** Frase de ejemplo (mientras no transcribas tu video): una palabra cada 0.32 s. */
+/** Frase de ejemplo (mientras no transcribas tu voz): una palabra cada 0.32 s. */
 const demoWords: CaptionWord[] = 'Esto lo hice con IA en diez minutos y hoy te enseño cómo.'
   .split(' ')
   .map((text, i) => ({ text, startMs: 200 + i * 320, endMs: 200 + i * 320 + 300 }));
 
-export const subtitulos: EffectDef<Props> = {
-  id: 'subtitulos',
-  name: 'Subtítulos',
-  group: 'apoyo',
-  description: 'Transcribe tu voz (de un video o un audio) con Whisper y pone subtítulos palabra por palabra, al tiempo exacto. 6 estilos virales. Exporta también SRT/VTT.',
-  usesMedia: true,
-  mediaLabel: 'Tu video o audio con voz',
-  fullLength: true,
-  acceptsAudio: true,
-  defaultDurationSec: 4.5,
-  defaults: {
-    words: demoWords,
-    wordsFor: '',
-    captionStyle: 'hormozi',
-    perPage: 'auto',
-    highlight: 'estilo',
-    heightPct: 66,
-    size: 1,
-    offsetMs: 0,
-    fit: 'cover',
-  },
-  params: [
-    { key: 'words', label: 'Transcripción', type: 'captions' },
-    {
-      key: 'captionStyle',
-      label: 'Estilo',
-      type: 'select',
-      options: [
-        { value: 'hormozi', label: 'Hormozi' },
-        { value: 'beast', label: 'MrBeast' },
-        { value: 'karaoke', label: 'Karaoke' },
-        { value: 'pop', label: 'Pop' },
-        { value: 'limpio', label: 'Limpio' },
-        { value: 'editorial', label: 'Editorial' },
-      ],
-    },
-    {
-      key: 'perPage',
-      label: 'Palabras a la vez',
-      type: 'select',
-      options: [
-        { value: 'auto', label: 'Auto' },
-        { value: '1', label: '1' },
-        { value: '2', label: '2' },
-        { value: '3', label: '3' },
-        { value: '4', label: '4' },
-        { value: '5', label: '5' },
-      ],
-    },
-    {
-      key: 'highlight',
-      label: 'Color de la palabra activa',
-      type: 'select',
-      options: [
-        { value: 'estilo', label: 'Del estilo' },
-        { value: 'amarillo', label: 'Amarillo' },
-        { value: 'verde', label: 'Verde' },
-        { value: 'mint', label: 'Menta' },
-        { value: 'violet', label: 'Violeta' },
-        { value: 'blue', label: 'Azul' },
-        { value: 'red', label: 'Rojo' },
-      ],
-    },
-    { key: 'heightPct', label: 'Altura en pantalla (%)', type: 'number', min: 15, max: 82, step: 1 },
-    { key: 'size', label: 'Tamaño', type: 'number', min: 0.5, max: 1.6, step: 0.05 },
-    { key: 'offsetMs', label: 'Adelantar / atrasar (ms)', type: 'number', min: -600, max: 600, step: 10 },
-    {
-      key: 'fit',
-      label: 'Encuadre del video',
-      type: 'select',
-      options: [
-        { value: 'cover', label: 'Llenar pantalla' },
-        { value: 'contain', label: 'Completo' },
-      ],
-    },
-  ],
-  component: Subtitulos,
+export const captionDefaults: CaptionsSettings = {
+  words: demoWords,
+  wordsFor: '',
+  captionStyle: 'hormozi',
+  perPage: 'auto',
+  highlight: 'estilo',
+  heightPct: 66,
+  size: 1,
+  offsetMs: 0,
 };
+
+/** Controles del estilo (la transcripción tiene su propio editor en la app). */
+export const captionParams: ParamDef[] = [
+  {
+    key: 'captionStyle',
+    label: 'Estilo',
+    type: 'select',
+    options: [
+      { value: 'hormozi', label: 'Hormozi' },
+      { value: 'beast', label: 'MrBeast' },
+      { value: 'karaoke', label: 'Karaoke' },
+      { value: 'pop', label: 'Pop' },
+      { value: 'limpio', label: 'Limpio' },
+      { value: 'editorial', label: 'Editorial' },
+    ],
+  },
+  {
+    key: 'perPage',
+    label: 'Palabras a la vez',
+    type: 'select',
+    options: [
+      { value: 'auto', label: 'Auto' },
+      { value: '1', label: '1' },
+      { value: '2', label: '2' },
+      { value: '3', label: '3' },
+      { value: '4', label: '4' },
+      { value: '5', label: '5' },
+    ],
+  },
+  {
+    key: 'highlight',
+    label: 'Color de la palabra activa',
+    type: 'select',
+    options: [
+      { value: 'estilo', label: 'Del estilo' },
+      { value: 'amarillo', label: 'Amarillo' },
+      { value: 'verde', label: 'Verde' },
+      { value: 'mint', label: 'Menta' },
+      { value: 'violet', label: 'Violeta' },
+      { value: 'blue', label: 'Azul' },
+      { value: 'red', label: 'Rojo' },
+    ],
+  },
+  { key: 'heightPct', label: 'Altura en pantalla (%)', type: 'number', min: 15, max: 82, step: 1 },
+  { key: 'size', label: 'Tamaño', type: 'number', min: 0.5, max: 1.6, step: 0.05 },
+  { key: 'offsetMs', label: 'Adelantar / atrasar (ms)', type: 'number', min: -600, max: 600, step: 10 },
+];
+

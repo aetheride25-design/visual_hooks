@@ -20,10 +20,12 @@ pnpm dev
 
 Abre http://localhost:3210.
 
-1. **Arrastra** tu video o imagen al panel izquierdo. Se copia a `media/`.
+1. **Arrastra** tu video, imagen o audio (mp3, wav, m4a…) al panel izquierdo. Se copia a `media/` y en la lista
+   ves su tipo y duración.
    Si es ProRes (Chrome no lo lee), se convierte solo con tu FFmpeg: con transparencia pasa a WebM VP9 con alfa y,
    sin transparencia, a MP4. Tu archivo original no se toca.
-2. **Haz clic** en un hook o efecto: se aplica al instante.
+2. **Haz clic** en un hook o efecto: se aplica al instante. Cada uno dice con qué funciona (🎬 video, 🖼 imagen,
+   🎵 audio, ✨ solo texto) y los que no sirven con lo que elegiste se ven apagados, con el motivo.
 3. Cambia los textos, colores, duración y velocidad a la derecha; la vista previa se actualiza en vivo.
    - Con ◀ ▶ debajo de la vista previa avanzas cuadro por cuadro.
    - En los efectos con punto de zoom, "🎯 Elegir punto" te deja hacer clic sobre el dato.
@@ -37,6 +39,31 @@ Abre http://localhost:3210.
    - **Secuencia PNG**: transparente, un PNG por cuadro. Úsala si el ProRes te da problemas.
 
 La primera exportación tarda más porque prepara el paquete. Cada export de 2–3 s tomó entre 5 y 13 s en esta PC.
+
+## Aplicar a mi video o solo el efecto
+
+Con un **video** elegido, en **Tiempo → ¿Qué exportas?** hay dos modos:
+
+- **Aplicar a mi video** (el de entrada): el export dura todo tu video y conserva su audio. El efecto ocupa solo un
+  tramo: eliges dónde con **Empieza en** (o arrastrando el tramo en la barra bajo la vista previa) y cuánto con
+  **Duración del efecto**. Antes y después sigue tu video normal; al terminar, el efecto se desvanece en 0.3 s.
+  Dentro del efecto tu video sigue en el segundo en que va, sin volver a empezar.
+- **Solo el efecto (DaVinci)**: el clip corto de siempre, con los primeros segundos de tu video y sin audio.
+
+Qué hace cada tipo de efecto sobre un video largo:
+
+| Tipo | Efectos | Qué pasa |
+|---|---|---|
+| Hook de un momento | Enfoque, Zoom, Texto que cae, Ventana 3D, Flecha, Glitch, Notificación, Tachón, Prompt, Cronómetro, Ventana flotante | Va en su tramo (de entrada, al inicio) y vuelve tu video limpio |
+| Dos medios | Antes/ahora de golpe, Antes/después | Tu video es el "ahora" y corre completo; el "antes" solo aparece en el tramo |
+| Todo el video | Mitad y mitad, Sin efecto | Dura todo tu video, con su audio |
+| Tarjeta | Número grande, Tarjeta de texto, Tarjeta de cierre, Lista misteriosa | Va encima de tu video, con un velo oscuro, en el segundo que elijas (la de cierre, al final) |
+| Pieza suelta | Una idea sin nombre | No va sobre un video: el export dura lo que la pieza |
+
+- Con una **imagen** no hay línea de tiempo: el export dura lo que el efecto.
+- Con un **audio** el export dura lo que el audio, sobre el fondo elegido. Solo sirven **Sin efecto**, las tarjetas y los subtítulos.
+- En este modo, **ProRes y PNG** salen sin tu video ni tu audio: solo el efecto y los subtítulos, transparentes y en su
+  segundo exacto, para ponerlos encima de tu video en DaVinci.
 
 ## Comprobar la transparencia en DaVinci Resolve
 
@@ -66,15 +93,19 @@ ffprobe -v error -show_entries stream=codec_name,profile,pix_fmt -of compact exp
 | `flecha-circulo`: trazo a mano sobre el dato | `tarjeta-texto`: frase grande con fuerza |
 | `antes-despues-golpe`: cambio seco con destello | `tarjeta-cierre`: "Próximo: … →" + @chito.dev |
 | `glitch`: bandas y RGB separado | `lista-misterio`: cartas "?" que se voltean |
-| `notificacion`: aviso tipo celular que baja | `subtitulos`: tu voz transcrita, palabra por palabra (ver abajo) |
+| `notificacion`: aviso tipo celular que baja | `sin-efecto`: tu video tal cual (para ponerle solo subtítulos) |
 | `tachon-rojo`: "3 horas" tachado en rojo → "10 min" | |
 | `prompt-escribe`: prompt o comando que se escribe solo | |
 | `cronometro`: reloj que corre rápido y frena en "10:00" | |
 
 ## Subtítulos automáticos
 
-1. Sube tu video **con voz** y elige **Subtítulos** en la lista.
-2. Elige la calidad (Rápido, Bueno o Mejor) y el idioma, y pulsa **🎙 Transcribir mi video**.
+Los subtítulos son una capa que va encima de **cualquier** efecto (o de "Sin efecto").
+
+1. Elige tu video o audio **con voz** y, en el bloque **Subtítulos** de la derecha, activa
+   "Poner subtítulos de tu voz encima". Hasta que transcribas ves una frase de ejemplo.
+2. Elige la calidad (Rápido, Bueno o Mejor) y el idioma, y pulsa **🎙 Transcribir mi video** (o **mi audio**).
+   Cada archivo guarda su transcripción: si cambias de video y vuelves, sigue ahí.
    - La primera vez instala Whisper (whisper.cpp) y baja el modelo en `.whisper/`: Bueno pesa ~470 MB y Mejor ~1.5 GB.
      Después ya no descarga nada y todo corre en tu PC.
    - La transcripción se guarda junto al video en `media/`, así que volver a pedirla es instantáneo.
@@ -94,8 +125,9 @@ ffprobe -v error -show_entries stream=codec_name,profile,pix_fmt -of compact exp
 5. Ajusta palabras a la vez, color, altura y tamaño. Si ves los subtítulos adelantados o atrasados, muévelos con
    "Adelantar / atrasar".
 6. Exporta:
-   - **MP4**: tu video con tu voz y los subtítulos quemados, listo para subir. Dura lo mismo que tu video.
-   - **ProRes o PNG**: solo los subtítulos con fondo transparente, para ponerlos encima en DaVinci.
+   - **MP4**: tu video con tu voz, el efecto y los subtítulos quemados, listo para subir. Dura lo mismo que tu video.
+   - **ProRes o PNG**: con "Sin efecto", solo los subtítulos con fondo transparente, para ponerlos encima en DaVinci.
+   - **⬇ SRT / ⬇ VTT**: la transcripción como archivo de subtítulos (CapCut, DaVinci, Premiere, YouTube).
 
 **C. Piezas animadas** (van solas, no sobre un video):
 - `idea-sin-nombre`: bombilla o nube de líneas finas, destellos que no forman nada y "???" que parpadea.
@@ -120,9 +152,9 @@ La guía de hooks con el celular está en [docs/guia-celular.md](docs/guia-celul
 ```
 src/brand.ts            colores Aurora y fuentes
 src/lib/                matemática pura (animación, geometría, texto) + pruebas
-src/components/         fondo Aurora, tarjeta, ventana, texto animado
-src/effects/            hooks y efectos de apoyo
-src/registry.tsx        lista de efectos + envoltura con el fondo de marca
+src/components/         fondos, tarjeta, ventana, texto animado, capa de subtítulos
+src/effects/            hooks, efectos de apoyo y "Sin efecto"
+src/registry.tsx        lista de efectos + envoltura: fondo, tu video con audio, tramo del efecto y subtítulos
 src/remotion/           entrada para el render (una composición por efecto)
 app/                    mini app (React + Remotion Player)
 server/                 servidor local: sube medios, sirve con Range, transcribe con Whisper y exporta con @remotion/renderer
@@ -138,7 +170,9 @@ server/                 servidor local: sube medios, sirve con Range, transcribe
 | `pnpm marca` | exporta las imágenes de marca (perfil y portada de X) a `assets/marca/` |
 
 ## Límites conocidos
-- **Audio**: los videos se usan en silencio, salvo en `subtitulos`, cuyo MP4 lleva tu voz.
+- **Audio**: en "Aplicar a mi video" el MP4 lleva el audio de tu video. En "Solo el efecto", el clip sale en silencio.
+- **Un efecto por video**: por ahora se aplica un efecto (más los subtítulos). Varios efectos en un mismo video
+  (hook al inicio, tarjeta a la mitad, cierre al final) necesitan una línea de tiempo con capas.
 - **H.264 por CPU**: Remotion no usa tu GPU AMD para codificar.
 - **Fuentes**: se usan las de Windows (Segoe UI Variable, Georgia, Cascadia Code). En otra PC podrían verse distintas.
   Las de los subtítulos (Montserrat y Bangers) van dentro del proyecto en `assets/fonts/`.
