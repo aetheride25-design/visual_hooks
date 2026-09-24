@@ -1,6 +1,7 @@
 node_modules/
 media/
 exports/
+.whisper/
 .playwright-mcp/
 dist/
 build/

@@ -64,10 +64,36 @@ ffprobe -v error -show_entries stream=codec_name,profile,pix_fmt -of compact exp
 | `flecha-circulo`: trazo a mano sobre el dato | `tarjeta-texto`: frase grande con fuerza |
 | `antes-despues-golpe`: cambio seco con destello | `tarjeta-cierre`: "Próximo: … →" + @chito.dev |
 | `glitch`: bandas y RGB separado | `lista-misterio`: cartas "?" que se voltean |
-| `notificacion`: aviso tipo celular que baja | |
+| `notificacion`: aviso tipo celular que baja | `subtitulos`: tu voz transcrita, palabra por palabra (ver abajo) |
 | `tachon-rojo`: "3 horas" tachado en rojo → "10 min" | |
 | `prompt-escribe`: prompt o comando que se escribe solo | |
 | `cronometro`: reloj que corre rápido y frena en "10:00" | |
+
+## Subtítulos automáticos
+
+1. Sube tu video **con voz** y elige **Subtítulos** en la lista.
+2. Elige la calidad (Rápido, Bueno o Mejor) y el idioma, y pulsa **🎙 Transcribir mi video**.
+   - La primera vez instala Whisper (whisper.cpp) y baja el modelo en `.whisper/`: Bueno pesa ~470 MB y Mejor ~1.5 GB.
+     Después ya no descarga nada y todo corre en tu PC.
+   - La transcripción se guarda junto al video en `media/`, así que volver a pedirla es instantáneo.
+3. Corrige las palabras que Whisper entendió mal (le pasa con "Claude Code", "pnpm", nombres…).
+   Enter guarda; vacía la borra; escribir dos palabras las reparte en el mismo tiempo. Clic en el tiempo te lleva ahí.
+4. Elige el estilo:
+
+| Estilo | Cómo se ve |
+|---|---|
+| Hormozi | Mayúsculas gruesas (Montserrat) con borde negro; la palabra que dices se pinta de amarillo |
+| MrBeast | Letra de cómic (Bangers) en itálica; cada palabra salta al decirla y la activa brilla en verde |
+| Karaoke | La frase entera visible y una caja de color detrás de la palabra que dices |
+| Pop | Una sola palabra enorme que rebota |
+| Limpio | Minimalista: lo que falta decir va tenue, sin borde |
+| Editorial | Como Baena: las palabras entran desenfocadas y la activa pasa a serif itálica de color |
+
+5. Ajusta palabras a la vez, color, altura y tamaño. Si ves los subtítulos adelantados o atrasados, muévelos con
+   "Adelantar / atrasar".
+6. Exporta:
+   - **MP4**: tu video con tu voz y los subtítulos quemados, listo para subir. Dura lo mismo que tu video.
+   - **ProRes o PNG**: solo los subtítulos con fondo transparente, para ponerlos encima en DaVinci.
 
 **C. Piezas animadas** (van solas, no sobre un video):
 - `idea-sin-nombre`: bombilla o nube de líneas finas, destellos que no forman nada y "???" que parpadea.
@@ -97,7 +123,7 @@ src/effects/            hooks y efectos de apoyo
 src/registry.tsx        lista de efectos + envoltura con el fondo de marca
 src/remotion/           entrada para el render (una composición por efecto)
 app/                    mini app (React + Remotion Player)
-server/                 servidor local: sube medios, sirve con Range y exporta con @remotion/renderer
+server/                 servidor local: sube medios, sirve con Range, transcribe con Whisper y exporta con @remotion/renderer
 ```
 
 ## Comandos
@@ -110,8 +136,7 @@ server/                 servidor local: sube medios, sirve con Range y exporta c
 | `pnpm marca` | exporta las imágenes de marca (perfil y portada de X) a `assets/marca/` |
 
 ## Límites conocidos
-- **Audio**: los videos se usan en silencio. Tu voz va en DaVinci.
+- **Audio**: los videos se usan en silencio, salvo en `subtitulos`, cuyo MP4 lleva tu voz.
 - **H.264 por CPU**: Remotion no usa tu GPU AMD para codificar.
 - **Fuentes**: se usan las de Windows (Segoe UI Variable, Georgia, Cascadia Code). En otra PC podrían verse distintas.
-- **Subtítulos palabra por palabra**: aún no están. Necesitan transcribir tu voz, y Whisper pide Python o descargar
-  un binario, así que queda para cuando lo autorices.
+  Las de los subtítulos (Montserrat y Bangers) van dentro del proyecto en `assets/fonts/`.

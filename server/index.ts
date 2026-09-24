@@ -7,6 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import { createServer as createVite } from 'vite';
 import { browserPlan, isTrustedRequest, mediaKind, probeMedia, safeName, serveFile, transcodeArgs } from './files.ts';
 import { cancelJob, EXPORT_DIR, getJob, startExport, type ExportFormat } from './render.ts';
+import { getTranscribeJob, startTranscription, WHISPER_MODELS, type TranscribeLang, type WhisperModel } from './transcribe.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const MEDIA_DIR = path.join(ROOT, 'media');
@@ -35,8 +36,15 @@ const readJson = async (req: http.IncomingMessage): Promise<any> => {
 };
 
 const mediaRef = (name: string) => {
-  const { width, height } = probeMedia(path.join(MEDIA_DIR, name));
-  return { name, kind: mediaKind(name)!, src: `${ORIGIN}/media/${encodeURIComponent(name)}`, width, height };
+  const { width, height, durationSec } = probeMedia(path.join(MEDIA_DIR, name));
+  return {
+    name,
+    kind: mediaKind(name)!,
+    src: `${ORIGIN}/media/${encodeURIComponent(name)}`,
+    width,
+    height,
+    ...(durationSec ? { durationSec } : {}),
+  };
 };
 
 const runFfmpeg = (args: string[]) =>
@@ -132,6 +140,20 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
     if (!job) return json(res, 404, { error: 'No existe ese export' }), true;
     const { cancel, ...visible } = job;
     return json(res, 200, visible), true;
+  }
+  if (p === '/api/transcribe' && req.method === 'POST') {
+    const body = await readJson(req);
+    const name = path.basename(String(body.name ?? ''));
+    const file = path.join(MEDIA_DIR, name);
+    if (mediaKind(name) !== 'video' || !fs.existsSync(file)) return json(res, 400, { error: 'Elige un video con voz.' }), true;
+    const model = WHISPER_MODELS.includes(body.model) ? (body.model as WhisperModel) : 'small';
+    const lang: TranscribeLang = ['es', 'en', 'auto'].includes(body.lang) ? body.lang : 'es';
+    return json(res, 200, { id: startTranscription(file, model, lang).id }), true;
+  }
+  const trMatch = /^\/api\/transcribe\/([\w-]+)$/.exec(p);
+  if (trMatch && req.method === 'GET') {
+    const job = getTranscribeJob(trMatch[1]);
+    return job ? json(res, 200, job) : json(res, 404, { error: 'No existe esa transcripción' }), true;
   }
   if (p === '/api/open-exports' && req.method === 'POST') {
     fs.mkdirSync(EXPORT_DIR, { recursive: true });

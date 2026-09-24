@@ -18,6 +18,7 @@ import { zoomBrusco } from './effects/hooks/ZoomBrusco.tsx';
 import { antesDespues } from './effects/apoyo/AntesDespues.tsx';
 import { listaMisterio } from './effects/apoyo/ListaMisterio.tsx';
 import { mitadYMitad } from './effects/apoyo/MitadYMitad.tsx';
+import { subtitulos } from './effects/apoyo/Subtitulos.tsx';
 import { numeroGrande } from './effects/apoyo/NumeroGrande.tsx';
 import { tarjetaCierre } from './effects/apoyo/TarjetaCierre.tsx';
 import { tarjetaTexto } from './effects/apoyo/TarjetaTexto.tsx';
@@ -45,6 +46,7 @@ export const effects: EffectDef<any>[] = [
   tarjetaTexto,
   tarjetaCierre,
   listaMisterio,
+  subtitulos,
   // C. Piezas animadas (no van sobre un video)
   ideaSinNombre,
 ];

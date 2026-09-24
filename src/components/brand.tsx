@@ -118,10 +118,15 @@ export const mediaRect = (media: MediaRef | null, box: Rect, fit: Fit): Rect => 
 };
 
 /**
- * Tu video (silenciado, exacto al cuadro en el render) o tu imagen, del tamaño de su contenedor.
+ * Tu video (silenciado salvo `muted={false}`, exacto al cuadro en el render) o tu imagen, del tamaño de su contenedor.
  * `width` es el ancho en px al que se dibuja: el marcador de posición lo usa para escalarse.
  */
-export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boolean }> = ({ media, width, loop = false }) => {
+export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boolean; muted?: boolean }> = ({
+  media,
+  width,
+  loop = false,
+  muted = true,
+}) => {
   if (!media) {
     return (
       <div
@@ -139,20 +144,21 @@ export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boo
   }
   const style: React.CSSProperties = { width: '100%', height: '100%', display: 'block' };
   return media.kind === 'video' ? (
-    <Video src={media.src} muted loop={loop} objectFit="fill" style={style} />
+    <Video src={media.src} muted={muted} loop={loop} objectFit="fill" style={style} />
   ) : (
     <Img src={media.src} style={{ ...style, objectFit: 'fill' }} />
   );
 };
 
 /** Medio ubicado en su rectángulo, en coordenadas del cuadro. */
-export const MediaAt: React.FC<{ media: MediaRef | null; rect: Rect; style?: React.CSSProperties; loop?: boolean }> = ({
+export const MediaAt: React.FC<{ media: MediaRef | null; rect: Rect; style?: React.CSSProperties; loop?: boolean; muted?: boolean }> = ({
   media,
   rect,
   style,
   loop,
+  muted,
 }) => (
   <div style={{ position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h, overflow: 'hidden', ...style }}>
-    <Media media={media} width={rect.w} loop={loop} />
+    <Media media={media} width={rect.w} loop={loop} muted={muted} />
   </div>
 );

@@ -6,7 +6,8 @@ import { mediaRect } from '../src/components/brand.tsx';
 import { FRAME } from '../src/lib/frame.ts';
 import { fitRect, pointToMedia, type Fit } from '../src/lib/layout.ts';
 import { listMedia, uploadMedia } from './api.ts';
-import { EffectList, ExportPanel, Field, FrameBar, MediaPanel } from './panels.tsx';
+import { CaptionsEditor, EffectList, ExportPanel, Field, FrameBar, MediaPanel } from './panels.tsx';
+import type { CaptionWord } from '../src/lib/captions.ts';
 
 type Overrides = Record<string, Record<string, unknown>>;
 
@@ -37,6 +38,8 @@ export const App: React.FC = () => {
         fps,
         speed,
         transparent,
+        // Los subtítulos duran lo mismo que tu video y van a velocidad normal (si no, se desfasan de tu voz).
+        ...(def.fullLength ? { speed: 1, ...(selectedMedia?.durationSec ? { durationSec: selectedMedia.durationSec } : {}) } : {}),
       }) as BaseProps & Record<string, unknown>,
     [def, own, selectedMedia, fps, speed, transparent],
   );
@@ -155,7 +158,22 @@ export const App: React.FC = () => {
           )}
           {def.params.map((p) => (
             <React.Fragment key={p.key}>
-              <Field def={p} media={media} value={props[p.key]} onChange={(v) => setOwn(p.key, v)} />
+              {p.type === 'captions' ? (
+                <CaptionsEditor
+                  video={selectedMedia}
+                  words={props[p.key] as CaptionWord[]}
+                  wordsFor={String(props.wordsFor ?? '')}
+                  onChange={(words, wordsFor) =>
+                    setOverrides((o) => ({ ...o, [effectId]: { ...o[effectId], [p.key]: words, wordsFor } }))
+                  }
+                  onSeek={(ms) => {
+                    player.current?.pause();
+                    player.current?.seekTo(Math.round((ms / 1000) * fps));
+                  }}
+                />
+              ) : (
+                <Field def={p} media={media} value={props[p.key]} onChange={(v) => setOwn(p.key, v)} />
+              )}
               {/* Tu video principal va justo debajo de la otra toma, para elegir las dos juntas. */}
               {p.key === firstMediaParam && mainMediaField}
             </React.Fragment>
@@ -164,18 +182,26 @@ export const App: React.FC = () => {
         </section>
         <section className="panel">
           <h2>Tiempo</h2>
-          <Field
-            def={{ key: 'durationSec', label: 'Duración (s)', type: 'number', min: 0.5, max: 10, step: 0.1 }}
-            media={media}
-            value={props.durationSec}
-            onChange={(v) => setOwn('durationSec', v)}
-          />
-          <Field
-            def={{ key: 'speed', label: 'Velocidad', type: 'number', min: 0.25, max: 3, step: 0.05 }}
-            media={media}
-            value={speed}
-            onChange={(v) => setSpeed(v as number)}
-          />
+          {def.fullLength ? (
+            <p className="desc">
+              Dura lo mismo que tu video ({Number(props.durationSec).toFixed(1)} s) y va a velocidad normal.
+            </p>
+          ) : (
+            <>
+              <Field
+                def={{ key: 'durationSec', label: 'Duración (s)', type: 'number', min: 0.5, max: 10, step: 0.1 }}
+                media={media}
+                value={props.durationSec}
+                onChange={(v) => setOwn('durationSec', v)}
+              />
+              <Field
+                def={{ key: 'speed', label: 'Velocidad', type: 'number', min: 0.25, max: 3, step: 0.05 }}
+                media={media}
+                value={speed}
+                onChange={(v) => setSpeed(v as number)}
+              />
+            </>
+          )}
           <Field
             def={{
               key: 'fps',
