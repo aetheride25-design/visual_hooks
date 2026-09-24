@@ -1,15 +1,16 @@
 import type React from 'react';
+import type { BgProps } from './background.ts';
 
 export type MediaRef = { src: string; kind: 'video' | 'image'; name: string; width: number; height: number };
 
 /** Props que reciben todos los hooks y efectos, además de los suyos. */
-export type BaseProps = {
+export type BaseProps = BgProps & {
   media: MediaRef | null;
   durationSec: number;
   fps: 30 | 60;
   /** Multiplica la velocidad de la animación (1 = normal). */
   speed: number;
-  /** Sin fondo de marca: para exportar con transparencia y montarlo encima en DaVinci. */
+  /** Sin fondo: para exportar con transparencia y montarlo encima en DaVinci. */
   transparent: boolean;
 };
 

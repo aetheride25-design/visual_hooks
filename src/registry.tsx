@@ -1,6 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
-import { AuroraBackground } from './components/brand.tsx';
+import { Background } from './components/backgrounds.tsx';
+import { bgDefaults } from './lib/background.ts';
 import { timeOf } from './lib/anim.ts';
 import type { BaseProps, EffectDef } from './lib/types.ts';
 import { HEIGHT, WIDTH } from './lib/frame.ts';
@@ -63,13 +64,14 @@ export const baseDefaults = (def: EffectDef<any>): BaseProps => ({
   fps: 30,
   speed: 1,
   transparent: false,
+  ...bgDefaults,
 });
 
 export const durationInFrames = (p: Pick<BaseProps, 'durationSec' | 'fps'>): number =>
   Math.max(1, Math.round(p.durationSec * p.fps));
 
 /**
- * Envoltura común: pone el fondo de marca salvo en modo transparente.
+ * Envoltura común: pone el fondo elegido salvo en modo transparente.
  * La usan igual la vista previa (Player) y el render (Composition).
  */
 export const shellFor = (def: EffectDef<any>): React.FC<Record<string, unknown>> => {
@@ -79,7 +81,7 @@ export const shellFor = (def: EffectDef<any>): React.FC<Record<string, unknown>>
     const t = timeOf(useCurrentFrame(), p.fps, p.speed);
     return (
       <AbsoluteFill>
-        {!p.transparent && <AuroraBackground t={t} />}
+        {!p.transparent && <Background t={t} bg={p.bg} bgTint={p.bgTint} bgBase={p.bgBase} bgColors={p.bgColors} />}
         <Inner {...(props as any)} />
       </AbsoluteFill>
     );

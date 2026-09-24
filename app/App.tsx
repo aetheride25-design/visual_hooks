@@ -7,6 +7,8 @@ import { FRAME } from '../src/lib/frame.ts';
 import { fitRect, pointToMedia, type Fit } from '../src/lib/layout.ts';
 import { listMedia, uploadMedia } from './api.ts';
 import { EffectList, ExportPanel, Field, FrameBar, MediaPanel } from './panels.tsx';
+import { BackgroundPanel } from './background-panel.tsx';
+import { bgDefaults, type BgProps } from '../src/lib/background.ts';
 
 type Overrides = Record<string, Record<string, unknown>>;
 
@@ -18,6 +20,7 @@ export const App: React.FC = () => {
   const [fps, setFps] = useState<30 | 60>(30);
   const [speed, setSpeed] = useState(1);
   const [transparent, setTransparent] = useState(false);
+  const [bg, setBg] = useState<BgProps>(bgDefaults);
   const [uploading, setUploading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const player = useRef<PlayerRef>(null);
@@ -37,8 +40,9 @@ export const App: React.FC = () => {
         fps,
         speed,
         transparent,
+        ...bg,
       }) as BaseProps & Record<string, unknown>,
-    [def, own, selectedMedia, fps, speed, transparent],
+    [def, own, selectedMedia, fps, speed, transparent, bg],
   );
   const canvas = canvasOf(def, props);
 
@@ -197,6 +201,7 @@ export const App: React.FC = () => {
             onChange={(v) => setTransparent(Boolean(v))}
           />
         </section>
+        <BackgroundPanel value={bg} onChange={setBg} transparent={transparent} />
         <ExportPanel effectId={effectId} effectName={def.name} props={props} size={canvas} />
       </aside>
     </div>
