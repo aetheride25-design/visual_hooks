@@ -1,0 +1,12 @@
+node_modules/
+media/
+exports/
+.playwright-mcp/
+dist/
+build/
+out/
+*.log
+.env
+.env.*
+assets/**/*.mp4
+assets/**/*.mov
