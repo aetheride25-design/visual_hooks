@@ -1,0 +1,28 @@
+{
+  "name": "hooksvisuales",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\" \"server/**/*.test.ts\"",
+    "marca": "node scripts/marca.ts"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.527",
+    "@remotion/media": "4.0.527",
+    "@remotion/player": "4.0.527",
+    "@remotion/renderer": "4.0.527",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.527"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.0"
+  }
+}
