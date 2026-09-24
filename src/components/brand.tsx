@@ -5,28 +5,6 @@ import { aurora, fonts } from '../brand.ts';
 import { fitRect, type Fit, type Rect } from '../lib/layout.ts';
 import type { MediaRef } from '../lib/types.ts';
 
-/** Fondo base con luz difuminada menta / azul / violeta que respira despacio. */
-export const AuroraBackground: React.FC<{ t: number }> = ({ t }) => {
-  const drift = (phase: number, amp: number) => Math.sin(t * 0.6 + phase) * amp;
-  const blob = (color: string, x: number, y: number, size: number, alpha: string): React.CSSProperties => ({
-    position: 'absolute',
-    left: x - size / 2,
-    top: y - size / 2,
-    width: size,
-    height: size,
-    borderRadius: '50%',
-    background: `radial-gradient(circle, ${color}${alpha} 0%, ${color}00 68%)`,
-    filter: 'blur(40px)',
-  });
-  return (
-    <AbsoluteFill style={{ background: aurora.base, overflow: 'hidden' }}>
-      <div style={blob(aurora.mint, 180 + drift(0, 60), 380 + drift(1, 40), 1100, '40')} />
-      <div style={blob(aurora.blue, 960 + drift(2, 50), 900 + drift(3, 70), 1200, '33')} />
-      <div style={blob(aurora.violet, 300 + drift(4, 70), 1650 + drift(5, 50), 1150, '38')} />
-    </AbsoluteFill>
-  );
-};
-
 /** Tarjeta Aurora: superficie, borde con línea de luz de 1 px y sombras en capas. */
 export const cardStyle = (radius = 36, glow?: string): React.CSSProperties => ({
   background: aurora.surface,

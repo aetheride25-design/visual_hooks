@@ -5,7 +5,7 @@ import bangersUrl from '../../../assets/fonts/bangers-latin.woff2';
 import montserratUrl from '../../../assets/fonts/montserrat-latin.woff2';
 import { aurora, fonts } from '../../brand.ts';
 import { Audio } from '@remotion/media';
-import { AuroraBackground, MediaAt, mediaRect } from '../../components/brand.tsx';
+import { MediaAt, mediaRect } from '../../components/brand.tsx';
 import { clamp01, easeOutBack, easeOutCubic, lerp } from '../../lib/anim.ts';
 import { activeWordIndex, displayText, pageAt, paginate, type CaptionWord } from '../../lib/captions.ts';
 import { FRAME } from '../../lib/frame.ts';
@@ -189,9 +189,8 @@ const Subtitulos: React.FC<Props & BaseProps> = (p) => {
       {/* En transparente (para DaVinci) salen solo los subtítulos. */}
       {!p.transparent &&
         (p.media?.kind === 'audio' ? (
-          // Solo audio: fondo Aurora con tu voz, listo para subir o para poner encima de otro video.
+          // Solo audio: el fondo animado (lo pone la envoltura) con tu voz, listo para subir o para poner encima de otro video.
           <>
-            <AuroraBackground t={frame / p.fps} />
             <Audio src={p.media.src} />
           </>
         ) : (

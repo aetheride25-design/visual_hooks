@@ -28,8 +28,10 @@ Abre http://localhost:3210.
    - Con ◀ ▶ debajo de la vista previa avanzas cuadro por cuadro.
    - En los efectos con punto de zoom, "🎯 Elegir punto" te deja hacer clic sobre el dato.
    - En los textos, lo que va entre `*asteriscos*` sale en serif itálica y color de acento.
+   - En **Fondo** eliges el estilo animado (Aurora, Puntos, Gradiente, Rejilla, Grano, Código o Sólido) y sus
+     colores: los de la marca, uno solo, o **Personalizado** (color base y tres luces a tu gusto). Vale para todos los efectos.
 4. **Exporta** (30 o 60 fps). Los archivos quedan en `exports/`:
-   - **MP4 (H.264)**: siempre con fondo de marca, para subir directo. H.264 no guarda transparencia, así que el
+   - **MP4 (H.264)**: siempre con el fondo elegido, para subir directo. H.264 no guarda transparencia, así que el
      interruptor "Fondo transparente" solo afecta la vista previa y a los otros dos formatos.
    - **ProRes 4444 (.mov)**: con fondo transparente, para ponerlo encima en DaVinci.
    - **Secuencia PNG**: transparente, un PNG por cuadro. Úsala si el ProRes te da problemas.
