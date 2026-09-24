@@ -8,6 +8,8 @@ import { fitRect, pointToMedia, type Fit } from '../src/lib/layout.ts';
 import { listMedia, uploadMedia } from './api.ts';
 import { CaptionsEditor, EffectList, ExportPanel, Field, FrameBar, MediaPanel } from './panels.tsx';
 import type { CaptionWord } from '../src/lib/captions.ts';
+import { BackgroundPanel } from './background-panel.tsx';
+import { bgDefaults, type BgProps } from '../src/lib/background.ts';
 
 type Overrides = Record<string, Record<string, unknown>>;
 
@@ -19,6 +21,7 @@ export const App: React.FC = () => {
   const [fps, setFps] = useState<30 | 60>(30);
   const [speed, setSpeed] = useState(1);
   const [transparent, setTransparent] = useState(false);
+  const [bg, setBg] = useState<BgProps>(bgDefaults);
   const [uploading, setUploading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const player = useRef<PlayerRef>(null);
@@ -39,10 +42,11 @@ export const App: React.FC = () => {
         fps,
         speed,
         transparent,
+        ...bg,
         // Los subtítulos duran lo mismo que tu video y van a velocidad normal (si no, se desfasan de tu voz).
         ...(def.fullLength ? { speed: 1, ...(selectedMedia?.durationSec ? { durationSec: selectedMedia.durationSec } : {}) } : {}),
       }) as BaseProps & Record<string, unknown>,
-    [def, own, selectedMedia, fps, speed, transparent],
+    [def, own, selectedMedia, fps, speed, transparent, bg],
   );
   const canvas = canvasOf(def, props);
 
@@ -226,6 +230,7 @@ export const App: React.FC = () => {
             onChange={(v) => setTransparent(Boolean(v))}
           />
         </section>
+        <BackgroundPanel value={bg} onChange={setBg} transparent={transparent} />
         <ExportPanel effectId={effectId} effectName={def.name} props={props} size={canvas} />
       </aside>
     </div>
