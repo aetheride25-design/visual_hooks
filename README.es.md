@@ -134,6 +134,7 @@ src/remotion/           entrada para el render (una composición por efecto)
 app/                    app local (React + Remotion Player)
 server/                 servidor local: sube medios, sirve con Range, transcribe con Whisper y exporta con @remotion/renderer
 docs/                   guía de hooks con el celular, por qué Remotion, good first issues
+scripts/                GIFs del README hechos con la propia app
 ```
 
 | Comando | Qué hace |
@@ -141,6 +142,7 @@ docs/                   guía de hooks con el celular, por qué Remotion, good f
 | `pnpm dev` | abre la app en http://localhost:3210 |
 | `pnpm test` | pruebas de la lógica pura (`node --test`) |
 | `pnpm typecheck` | revisa los tipos con TypeScript |
+| `node scripts/readme-media.ts <clip>` | vuelve a generar los GIFs del README con la app abierta |
 
 ## Límites conocidos
 
