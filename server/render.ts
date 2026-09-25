@@ -4,6 +4,8 @@ import { bundle } from '@remotion/bundler';
 import { makeCancelSignal, renderFrames, renderMedia, selectComposition } from '@remotion/renderer';
 
 export type ExportFormat = 'mp4' | 'prores' | 'png';
+/** ×2 renders 2160×3840 instead of 1080×1920: for 4K footage, so it keeps its detail. */
+export type ExportScale = 1 | 2;
 
 export type Job = {
   id: string;
@@ -53,9 +55,9 @@ const stamp = () => {
   return `${d.getFullYear()}${two(d.getMonth() + 1)}${two(d.getDate())}-${two(d.getHours())}${two(d.getMinutes())}${two(d.getSeconds())}`;
 };
 
-export const startExport = (effectId: string, props: Record<string, unknown>, format: ExportFormat): Job => {
+export const startExport = (effectId: string, props: Record<string, unknown>, format: ExportFormat, scale: ExportScale = 1): Job => {
   // The counter keeps two exports in the same second from overwriting each other.
-  const id = `${effectId}-${stamp()}-${++counter}-${format}`;
+  const id = `${effectId}-${stamp()}-${++counter}-${format}${scale === 2 ? '-x2' : ''}`;
   const { cancelSignal, cancel } = makeCancelSignal();
   const job: Job = { id, effectId, format, status: 'preparing', progress: 0, output: null, error: null, cancel };
   jobs.set(id, job);
@@ -81,6 +83,7 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
         inputProps,
         outputDir,
         imageFormat: 'png',
+        scale,
         cancelSignal,
         onStart: () => undefined,
         onFrameUpdate: (done) => (job.progress = done / composition.durationInFrames),
@@ -93,6 +96,7 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
         composition,
         inputProps,
         outputLocation,
+        scale,
         cancelSignal,
         onProgress: ({ progress }) => (job.progress = progress),
         ...(format === 'mp4'

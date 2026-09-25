@@ -42,3 +42,13 @@ export const cameraTransform = (
   const ty = focus.y * (1 - zoom) + (cy - focus.y) * center;
   return `translate(${tx}px, ${ty}px) scale(${zoom})`;
 };
+
+/**
+ * Export scale that keeps your footage's detail. The frame shows `mw×mh` media fully visible inside `box`:
+ * if the media has at least twice those pixels (4K, 1440p horizontal, vertical 4K…), exporting at ×2 keeps them.
+ */
+export const exportScaleFor = (mw: number, mh: number, box: { w: number; h: number }): 1 | 2 => {
+  if (!mw || !mh) return 1;
+  const shownAt = Math.min(box.w / mw, box.h / mh);
+  return shownAt <= 0.5 ? 2 : 1;
+};
