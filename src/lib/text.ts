@@ -1,4 +1,4 @@
-// Texto con énfasis: escribe *palabra* para destacarla (color de acento + serif itálica).
+// Emphasized text: write *word* to highlight it (accent color + italic serif).
 
 export type Word = { text: string; accent: boolean };
 
@@ -7,7 +7,7 @@ export const parseWords = (raw: string): Word[] => {
   let accent = false;
   for (const token of raw.split(/\s+/).filter(Boolean)) {
     if (/^\*+$/.test(token)) continue;
-    // [signos de apertura][*]palabra[*][signos de cierre], p. ej. "¡*gratis*!" o "*excusas*."
+    // [opening marks][*]word[*][closing marks], e.g. "¡*free*!" or "*excuses*."
     const m = /^([¡¿("'«]*)(\**)(.*?)(\**)([.,;:!?)"'»]*)$/.exec(token)!;
     const [, pre, open, core, close, post] = m;
     if (open) accent = true;
@@ -18,7 +18,7 @@ export const parseWords = (raw: string): Word[] => {
   return words;
 };
 
-/** Parte el texto en líneas (separadas por salto de línea), cada una con sus palabras. */
+/** Splits the text into lines (on line breaks), each with its words. */
 export const parseLines = (raw: string): Word[][] =>
   raw
     .split(/\n/)

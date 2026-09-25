@@ -37,7 +37,7 @@ export const mediaKind = (name: string): 'video' | 'image' | 'audio' | null => {
 
 export type Probe = { width: number; height: number; codec: string; pixFmt: string; durationSec: number | null };
 
-/** Tamaño, códec, formato de píxel y duración del video, imagen o audio, leídos con el ffprobe de tu FFmpeg. Se cachea por archivo. */
+/** Size, codec, pixel format and duration of the video, image or audio, read with your FFmpeg's ffprobe. Cached per file. */
 const probeCache = new Map<string, { mtime: number; probe: Probe }>();
 export const probeMedia = (file: string): Probe => {
   const mtime = fs.statSync(file).mtimeMs;
@@ -59,26 +59,26 @@ export const probeMedia = (file: string): Probe => {
     pixFmt: String(s.pix_fmt ?? ''),
     durationSec: kind !== 'image' && Number.isFinite(duration) && duration > 0 ? duration : null,
   };
-  // Un audio no tiene tamaño (o trae solo la carátula): basta con que tenga duración.
+  // Audio has no size (or only cover art): a duration is enough.
   if (kind === 'audio') {
-    if (!probe.durationSec) throw new Error(`No pude leer la duración de ${path.basename(file)}`);
+    if (!probe.durationSec) throw new Error(`Couldn't read the duration of ${path.basename(file)}`);
     Object.assign(probe, { width: 0, height: 0 });
-  } else if (!probe.width || !probe.height) throw new Error(`No pude leer el tamaño de ${path.basename(file)}`);
+  } else if (!probe.width || !probe.height) throw new Error(`Couldn't read the size of ${path.basename(file)}`);
   probeCache.set(file, { mtime, probe });
   return probe;
 };
 
-/** Códecs de video que Chrome decodifica (vista previa y render). ProRes no está. */
+/** Video codecs Chrome decodes (preview and render). ProRes isn't one. */
 const BROWSER_CODECS = ['h264', 'vp8', 'vp9', 'av1'];
 
-/** ¿El formato de píxel trae canal alfa (transparencia)? */
+/** Does the pixel format carry an alpha channel (transparency)? */
 export const hasAlpha = (pixFmt: string): boolean => /^(yuva|rgba|bgra|argb|abgr|gbrap|ya)/.test(pixFmt);
 
 /**
- * Qué hacer con un video subido para que el navegador lo lea:
- * - null: sirve tal cual.
- * - 'webm-alpha': convertir a WebM VP9 conservando la transparencia (p. ej. ProRes 4444).
- * - 'mp4': convertir a MP4 H.264 (p. ej. ProRes sin transparencia).
+ * What to do with an uploaded video so the browser can read it:
+ * - null: serve as is.
+ * - 'webm-alpha': convert to WebM VP9 keeping transparency (e.g. ProRes 4444).
+ * - 'mp4': convert to MP4 H.264 (e.g. ProRes without transparency).
  */
 export const browserPlan = (codec: string, pixFmt: string): 'webm-alpha' | 'mp4' | null => {
   if (BROWSER_CODECS.includes(codec)) return null;
@@ -86,8 +86,8 @@ export const browserPlan = (codec: string, pixFmt: string): 'webm-alpha' | 'mp4'
 };
 
 /**
- * Argumentos de FFmpeg para esa conversión.
- * El audio se conserva (si lo hay): los subtítulos lo necesitan para transcribir y para el MP4 final.
+ * FFmpeg arguments for that conversion.
+ * The audio is kept (if any): captions need it to transcribe and for the final MP4.
  */
 export const transcodeArgs = (plan: 'webm-alpha' | 'mp4', input: string, output: string): string[] =>
   plan === 'webm-alpha'
@@ -96,7 +96,7 @@ export const transcodeArgs = (plan: 'webm-alpha' | 'mp4', input: string, output:
     : ['-y', '-i', input, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', '-preset', 'medium', '-g', '30',
        '-c:a', 'aac', '-b:a', '192k', output];
 
-/** Nombre seguro para guardar en disco: sin rutas, sin caracteres raros. */
+/** Safe name to store on disk: no paths, no odd characters. */
 export const safeName = (raw: string): string => {
   const base = path.basename(raw.replace(/\\/g, '/'));
   const ext = path.extname(base).toLowerCase();
@@ -107,23 +107,23 @@ export const safeName = (raw: string): string => {
     .replace(/[^a-zA-Z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
-  return `${stem || 'archivo'}${ext}`;
+  return `${stem || 'file'}${ext}`;
 };
 
-/** Origen de una página servida desde esta misma PC (la app o el render de Remotion). */
+/** Origin of a page served from this same PC (the app or the Remotion render). */
 export const isLocalOrigin = (origin: string): boolean => /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(origin);
 
 /**
- * Protege el servidor de otras webs abiertas en tu navegador:
- * - Host tiene que ser este servidor (frena el "DNS rebinding").
- * - Si la petición trae Origin, tiene que ser local (frena los POST desde webs ajenas).
+ * Protects the server from other sites open in your browser:
+ * - Host must be this server (stops "DNS rebinding").
+ * - If the request has an Origin, it must be local (stops POSTs from other sites).
  */
 export const isTrustedRequest = (host: string | undefined, origin: string | undefined, port: number): boolean => {
   if (host !== `localhost:${port}` && host !== `127.0.0.1:${port}`) return false;
   return origin === undefined || isLocalOrigin(origin);
 };
 
-/** Interpreta la cabecera Range (necesaria para que el video se pueda adelantar en la vista previa). */
+/** Parses the Range header (needed to seek the video in the preview). */
 export const parseRange = (header: string | undefined, size: number): { start: number; end: number } | null => {
   if (!header) return null;
   const m = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
@@ -141,7 +141,7 @@ export const parseRange = (header: string | undefined, size: number): { start: n
   return { start, end };
 };
 
-/** Sirve un archivo dentro de `dir` con soporte de Range. Devuelve false si no existe. */
+/** Serves a file inside `dir` with Range support. Returns false if it doesn't exist. */
 export const serveFile = (req: IncomingMessage, res: ServerResponse, dir: string, relName: string): boolean => {
   const file = path.resolve(dir, relName);
   if (!file.startsWith(path.resolve(dir) + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
@@ -149,7 +149,7 @@ export const serveFile = (req: IncomingMessage, res: ServerResponse, dir: string
   }
   const size = fs.statSync(file).size;
   const type = MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
-  // El render (Chrome headless en otro puerto local) lee el video con fetch: solo se permite a orígenes locales.
+  // The render (headless Chrome on another local port) fetches the video: only local origins are allowed.
   const origin = req.headers.origin;
   const headers: Record<string, string> = {
     'Content-Type': type,

@@ -1,12 +1,12 @@
 import React from 'react';
-import { aurora, fonts } from '../brand.ts';
+import { aurora, fonts } from '../theme.ts';
 import { fitRect } from '../lib/layout.ts';
 import type { MediaRef } from '../lib/types.ts';
-import { cardStyle, Media, sizeOf } from './brand.tsx';
+import { cardStyle, Media, sizeOf } from './media.tsx';
 
 const BAR = 64;
 
-/** Medidas de la ventana para que tu captura quepa completa en `maxW × maxH`. */
+/** Window size so your footage fits entirely inside `maxW × maxH`. */
 export const windowSize = (media: MediaRef | null, maxW: number, maxH: number, bar = true) => {
   const barH = bar ? BAR : 0;
   const s = sizeOf(media);
@@ -14,14 +14,14 @@ export const windowSize = (media: MediaRef | null, maxW: number, maxH: number, b
   return { w: r.w, h: r.h + barH, mediaH: r.h };
 };
 
-/** Ventana tipo navegador con tu captura adentro: barra con 3 puntos y dirección. */
+/** Browser-like window with your footage inside: bar with 3 dots and an address. */
 export const AppWindow: React.FC<{
   media: MediaRef | null;
   width: number;
   mediaHeight: number;
   address: string;
   glow: string;
-  /** Sin barra: solo la tarjeta con tu captura. */
+  /** No bar: just the card with your footage. */
   bar?: boolean;
   style?: React.CSSProperties;
 }> = ({ media, width, mediaHeight, address, glow, bar = true, style }) => (

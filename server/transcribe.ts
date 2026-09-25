@@ -1,25 +1,27 @@
-// Transcripción local con Whisper (whisper.cpp): saca el tiempo de cada palabra para los subtítulos.
-// La primera vez instala whisper.cpp y baja el modelo en .whisper/ (queda fuera de git). Nada sale de tu PC.
+// Local transcription with Whisper (whisper.cpp): gets the timing of every word for the captions.
+// The first time it installs whisper.cpp and downloads the model into .whisper/ (git-ignored). Nothing leaves your PC.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { downloadWhisperModel, installWhisperCpp, toCaptions, transcribe, type Language } from '@remotion/install-whisper-cpp';
 import { wordsFromTokens, type CaptionWord } from '../src/lib/captions.ts';
+import { tr, type Lang } from '../src/lib/i18n.ts';
+import { runFfmpeg } from './ffmpeg.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const WHISPER_DIR = path.join(ROOT, '.whisper');
-// 1.5.5: la versión que Remotion recomienda; en Windows baja un binario listo, sin compilar.
+// 1.5.5: the version Remotion recommends; on Windows it downloads a ready-made binary, no compiling.
 const WHISPER_VERSION = '1.5.5';
 const WHISPER_BIN = path.join(WHISPER_DIR, `whisper.cpp-${WHISPER_VERSION}`);
 
 export type WhisperModel = 'base' | 'small' | 'medium';
 export const WHISPER_MODELS: WhisperModel[] = ['base', 'small', 'medium'];
+/** Language spoken in the video. */
 export type TranscribeLang = 'es' | 'en' | 'auto';
 
 export type TranscribeJob = {
   id: string;
-  status: 'instalando' | 'descargando' | 'transcribiendo' | 'listo' | 'error';
+  status: 'installing' | 'downloading' | 'transcribing' | 'done' | 'error';
   progress: number;
   words: CaptionWord[] | null;
   error: string | null;
@@ -29,36 +31,34 @@ const jobs = new Map<string, TranscribeJob>();
 let counter = 0;
 export const getTranscribeJob = (id: string) => jobs.get(id);
 
-/** Dónde se guarda la transcripción de un video (junto a él en media/, para no repetirla). */
-const cacheFile = (mediaFile: string, model: WhisperModel, lang: TranscribeLang) =>
-  `${mediaFile}.${model}.${lang}.captions.json`;
+/** Where a video's transcript is saved (next to it in media/, so it's never redone). */
+const cacheFile = (mediaFile: string, model: WhisperModel, speech: TranscribeLang) =>
+  `${mediaFile}.${model}.${speech}.captions.json`;
 
-/** Audio a WAV mono de 16 kHz, el formato que exige whisper.cpp. */
-const extractAudio = (input: string, output: string) =>
-  new Promise<void>((resolve, reject) => {
-    const p = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', input, '-vn', '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', output], {
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
-    let err = '';
-    p.stderr.on('data', (d) => (err += d));
-    p.on('error', reject);
-    p.on('close', (code) =>
-      code === 0 ? resolve() : reject(new Error(/does not contain any stream|matches no streams/.test(err) ? 'Este video no tiene audio.' : err.trim() || `FFmpeg salió con código ${code}`)),
-    );
-  });
+/** Audio to 16 kHz mono WAV, the format whisper.cpp requires. */
+const extractAudio = async (input: string, output: string, ui: Lang) => {
+  try {
+    await runFfmpeg(['-y', '-i', input, '-vn', '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', output]);
+  } catch (err) {
+    if (/does not contain any stream|matches no streams/.test((err as Error).message))
+      throw new Error(tr({ en: 'This video has no audio.', es: 'Este video no tiene audio.' }, ui));
+    throw err;
+  }
+};
 
-// Una transcripción a la vez: whisper usa todos los núcleos y dos juntas solo irían más lento.
+// One transcription at a time: whisper uses every core and two at once would only be slower.
 let queue: Promise<unknown> = Promise.resolve();
 
-export const startTranscription = (mediaFile: string, model: WhisperModel, lang: TranscribeLang): TranscribeJob => {
+/** `ui` is the app's language, for error messages. */
+export const startTranscription = (mediaFile: string, model: WhisperModel, speech: TranscribeLang, ui: Lang): TranscribeJob => {
   const id = `tr-${Date.now()}-${++counter}`;
-  const job: TranscribeJob = { id, status: 'instalando', progress: 0, words: null, error: null };
+  const job: TranscribeJob = { id, status: 'installing', progress: 0, words: null, error: null };
   jobs.set(id, job);
 
-  const cached = cacheFile(mediaFile, model, lang);
+  const cached = cacheFile(mediaFile, model, speech);
   if (fs.existsSync(cached)) {
     job.words = JSON.parse(fs.readFileSync(cached, 'utf8'));
-    job.status = 'listo';
+    job.status = 'done';
     job.progress = 1;
     return job;
   }
@@ -68,11 +68,11 @@ export const startTranscription = (mediaFile: string, model: WhisperModel, lang:
     try {
       await installWhisperCpp({ to: WHISPER_BIN, version: WHISPER_VERSION, printOutput: true });
     } catch (err) {
-      // Instalación a medias (p. ej. cerraste la app): se borra para que el próximo intento empiece de cero.
+      // Half-finished install (e.g. you closed the app): delete it so the next try starts clean.
       fs.rmSync(WHISPER_BIN, { recursive: true, force: true });
       throw err;
     }
-    job.status = 'descargando';
+    job.status = 'downloading';
     await downloadWhisperModel({
       model,
       folder: WHISPER_DIR,
@@ -80,11 +80,11 @@ export const startTranscription = (mediaFile: string, model: WhisperModel, lang:
       onProgress: (done, total) => (job.progress = total ? done / total : 0),
     });
 
-    job.status = 'transcribiendo';
+    job.status = 'transcribing';
     job.progress = 0;
     const wav = path.join(os.tmpdir(), `hooks-${id}.wav`);
     try {
-      await extractAudio(mediaFile, wav);
+      await extractAudio(mediaFile, wav, ui);
       const out = await transcribe({
         inputPath: wav,
         whisperPath: WHISPER_BIN,
@@ -93,16 +93,16 @@ export const startTranscription = (mediaFile: string, model: WhisperModel, lang:
         modelFolder: WHISPER_DIR,
         tokenLevelTimestamps: true,
         splitOnWord: true,
-        language: lang === 'auto' ? null : (lang as Language),
+        language: speech === 'auto' ? null : (speech as Language),
         printOutput: false,
         onProgress: (p) => (job.progress = p),
       });
       const words = wordsFromTokens(toCaptions({ whisperCppOutput: out }).captions);
-      if (!words.length) throw new Error('Whisper no encontró voz en este video.');
+      if (!words.length) throw new Error(tr({ en: 'Whisper found no speech in this file.', es: 'Whisper no encontró voz en este video.' }, ui));
       fs.writeFileSync(cached, JSON.stringify(words));
       job.words = words;
       job.progress = 1;
-      job.status = 'listo';
+      job.status = 'done';
     } finally {
       fs.rmSync(wav, { force: true });
     }
@@ -111,7 +111,7 @@ export const startTranscription = (mediaFile: string, model: WhisperModel, lang:
   queue = queue.then(run).catch((err: Error) => {
     job.status = 'error';
     job.error = err.message;
-    console.error(`[transcripción ${id}]`, err);
+    console.error(`[transcription ${id}]`, err);
   });
   return job;
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
-import { aurora, colorOf, fonts, type PaletteColor } from '../../brand.ts';
-import { MediaAt, mediaRect } from '../../components/brand.tsx';
+import { aurora, colorOf, fonts, type PaletteColor } from '../../theme.ts';
+import { MediaAt, mediaRect } from '../../components/media.tsx';
 import { progress, timeOf } from '../../lib/anim.ts';
 import { FRAME } from '../../lib/frame.ts';
 import type { Fit } from '../../lib/layout.ts';
@@ -16,7 +16,7 @@ type Props = {
   fit: Fit;
 };
 
-/** Cuánto "rompe" la imagen en el tiempo t: golpe fuerte al inicio y, si se pide, un réplica corta. */
+/** How much the image "breaks" at time t: a strong hit at the start and, if enabled, a short aftershock. */
 const glitchAmount = (t: number, dur: number, aftershock: boolean): number => {
   const main = t < dur ? 1 - progress(t, dur * 0.4, dur * 0.6) : 0;
   const after = aftershock && t > dur + 0.55 && t < dur + 0.67 ? 0.6 : 0;
@@ -24,14 +24,14 @@ const glitchAmount = (t: number, dur: number, aftershock: boolean): number => {
 };
 
 /**
- * Transición glitch: la imagen se parte en bandas desplazadas y separa los canales RGB,
- * y se recompone. Es un filtro SVG sobre un solo video, con semilla por cuadro (determinista).
+ * Glitch transition: the image splits into shifted bands, separates its RGB channels,
+ * then pulls itself back together. An SVG filter over a single video, seeded per frame (deterministic).
  */
 const Glitch: React.FC<Props & BaseProps> = (p) => {
   const frame = useCurrentFrame();
   const t = timeOf(frame, p.fps, p.speed);
   const k = glitchAmount(t, p.glitchSec, p.aftershock) * p.intensity;
-  // La semilla cambia cada 2 cuadros para que el ruido "salte" como un glitch real.
+  // The seed changes every 2 frames so the noise "jumps" like a real glitch.
   const seed = Math.floor(frame / 2) + 1;
   const id = `glitch-${seed}`;
   const split = 26 * k;
@@ -80,25 +80,28 @@ const Glitch: React.FC<Props & BaseProps> = (p) => {
 
 export const glitch: EffectDef<Props> = {
   id: 'glitch',
-  name: 'Glitch',
+  name: { en: 'Glitch', es: 'Glitch' },
   group: 'hook',
-  description: 'La imagen se parte en bandas y separa los colores RGB, y se recompone. Estilo Fireship.',
+  description: {
+    en: 'The image splits into bands, separates its RGB colors, then pulls back together.',
+    es: 'La imagen se parte en bandas y separa los colores RGB, y se recompone.',
+  },
   usesMedia: true,
   defaultDurationSec: 1.6,
   defaults: { title: 'BUG', color: 'violet', intensity: 1, glitchSec: 0.4, aftershock: true, fit: 'contain' },
   params: [
-    { key: 'title', label: 'Palabra (vacío = sin texto)', type: 'text' },
-    { key: 'color', label: 'Color del brillo', type: 'color' },
-    { key: 'intensity', label: 'Intensidad', type: 'number', min: 0.2, max: 2, step: 0.05 },
-    { key: 'glitchSec', label: 'Duración del glitch (s)', type: 'number', min: 0.1, max: 1.5, step: 0.05 },
-    { key: 'aftershock', label: 'Réplica corta después', type: 'boolean' },
+    { key: 'title', label: { en: 'Word (empty = no text)', es: 'Palabra (vacío = sin texto)' }, type: 'text' },
+    { key: 'color', label: { en: 'Glow color', es: 'Color del brillo' }, type: 'color' },
+    { key: 'intensity', label: { en: 'Intensity', es: 'Intensidad' }, type: 'number', min: 0.2, max: 2, step: 0.05 },
+    { key: 'glitchSec', label: { en: 'Glitch duration (s)', es: 'Duración del glitch (s)' }, type: 'number', min: 0.1, max: 1.5, step: 0.05 },
+    { key: 'aftershock', label: { en: 'Short aftershock', es: 'Réplica corta después' }, type: 'boolean' },
     {
       key: 'fit',
-      label: 'Encuadre',
+      label: { en: 'Framing', es: 'Encuadre' },
       type: 'select',
       options: [
-        { value: 'contain', label: 'Completa' },
-        { value: 'cover', label: 'Llenar pantalla' },
+        { value: 'contain', label: { en: 'Whole', es: 'Completa' } },
+        { value: 'cover', label: { en: 'Fill screen', es: 'Llenar pantalla' } },
       ],
     },
   ],

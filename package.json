@@ -1,12 +1,17 @@
 {
-  "name": "hooksvisuales",
+  "name": "visual-hooks",
+  "version": "0.1.0",
+  "description": "Visual hooks and captions for vertical videos (TikTok, Reels, Shorts), with a local app to preview and export them. Built with Remotion.",
   "private": true,
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "dev": "node server/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"src/**/*.test.ts\" \"server/**/*.test.ts\"",
-    "marca": "node scripts/marca.ts"
+    "test": "node --test \"src/**/*.test.ts\" \"server/**/*.test.ts\""
   },
   "dependencies": {
     "@remotion/bundler": "4.0.527",
