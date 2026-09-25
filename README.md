@@ -1,178 +1,153 @@
-# Hooks visuales · chitodev
+# Visual Hooks
 
-Biblioteca de **hooks visuales** (primer segundo) y **efectos de apoyo** para TikTok, Reels y Shorts
-(1080×1920), con una mini app local para probarlos sobre tus videos e imágenes y exportarlos.
+**English** · [Español](README.es.md)
 
-- La vista previa y el export usan **el mismo componente**: lo que ves es lo que se exporta, cuadro por cuadro.
-- Todo corre en tu PC: el servidor solo escucha en `127.0.0.1` y tus archivos no se suben a ningún lado.
-- Construido con [Remotion](https://www.remotion.dev) 4.0.527 (React). Es gratis para individuos:
-  https://www.remotion.dev/license
+<p align="center"><img src="docs/media/hero.gif" width="540" alt="The same clip without a hook and with a hook"></p>
 
-## Usarlo
+**Scroll-stopping first seconds for TikTok, Reels and Shorts.** 20 animated hooks and effects plus auto-captions,
+applied to your own video in a local app, exported as MP4, ProRes 4444 with alpha, or a PNG sequence. Free and open source.
 
 ```bash
+git clone https://github.com/aetheride25-design/visual_hooks.git && cd visual_hooks
 pnpm install
-```
-
-```bash
 pnpm dev
 ```
 
-Abre http://localhost:3210.
+Then open http://localhost:3210.
 
-1. **Arrastra** tu video, imagen o audio (mp3, wav, m4a…) al panel izquierdo. Se copia a `media/` y en la lista
-   ves su tipo y duración.
-   Si es ProRes (Chrome no lo lee), se convierte solo con tu FFmpeg: con transparencia pasa a WebM VP9 con alfa y,
-   sin transparencia, a MP4. Tu archivo original no se toca.
-2. **Haz clic** en un hook o efecto: se aplica al instante. Cada uno dice con qué funciona (🎬 video, 🖼 imagen,
-   🎵 audio, ✨ solo texto) y los que no sirven con lo que elegiste se ven apagados, con el motivo.
-3. Cambia los textos, colores, duración y velocidad a la derecha; la vista previa se actualiza en vivo.
-   - Con ◀ ▶ debajo de la vista previa avanzas cuadro por cuadro.
-   - En los efectos con punto de zoom, "🎯 Elegir punto" te deja hacer clic sobre el dato.
-   - En los textos, lo que va entre `*asteriscos*` sale en serif itálica y color de acento.
-   - En **Fondo** eliges el estilo animado (Aurora, Puntos, Gradiente, Rejilla, Grano, Código o Sólido) y sus
-     colores: los de la marca, uno solo, o **Personalizado** (color base y tres luces a tu gusto). Vale para todos los efectos.
-4. **Exporta** (30 o 60 fps). Los archivos quedan en `exports/`:
-   - **MP4 (H.264)**: siempre con el fondo elegido, para subir directo. H.264 no guarda transparencia, así que el
-     interruptor "Fondo transparente" solo afecta la vista previa y a los otros dos formatos.
-   - **ProRes 4444 (.mov)**: con fondo transparente, para ponerlo encima en DaVinci.
-   - **Secuencia PNG**: transparente, un PNG por cuadro. Úsala si el ProRes te da problemas.
+Made by [@chitodev](https://x.com/chitodev) · Built with [Remotion](https://www.remotion.dev)
 
-La primera exportación tarda más porque prepara el paquete. Cada export de 2–3 s tomó entre 5 y 13 s en esta PC.
+## The hooks
 
-## Aplicar a mi video o solo el efecto
-
-Con un **video** elegido, en **Tiempo → ¿Qué exportas?** hay dos modos:
-
-- **Aplicar a mi video** (el de entrada): el export dura todo tu video y conserva su audio. El efecto ocupa solo un
-  tramo: eliges dónde con **Empieza en** (o arrastrando el tramo en la barra bajo la vista previa) y cuánto con
-  **Duración del efecto**. Antes y después sigue tu video normal; al terminar, el efecto se desvanece en 0.3 s.
-  Dentro del efecto tu video sigue en el segundo en que va, sin volver a empezar.
-- **Solo el efecto (DaVinci)**: el clip corto de siempre, con los primeros segundos de tu video y sin audio.
-
-Qué hace cada tipo de efecto sobre un video largo:
-
-| Tipo | Efectos | Qué pasa |
+| | | |
 |---|---|---|
-| Hook de un momento | Enfoque, Zoom, Texto que cae, Ventana 3D, Flecha, Glitch, Notificación, Tachón, Prompt, Cronómetro, Ventana flotante | Va en su tramo (de entrada, al inicio) y vuelve tu video limpio |
-| Dos medios | Antes/ahora de golpe, Antes/después | Tu video es el "ahora" y corre completo; el "antes" solo aparece en el tramo |
-| Todo el video | Mitad y mitad, Sin efecto | Dura todo tu video, con su audio |
-| Tarjeta | Número grande, Tarjeta de texto, Tarjeta de cierre, Lista misteriosa | Va encima de tu video, con un velo oscuro, en el segundo que elijas (la de cierre, al final) |
-| Pieza suelta | Una idea sin nombre | No va sobre un video: el export dura lo que la pieza |
+| <img src="docs/media/focus-snap.gif" width="200"><br>`focus-snap`: starts zoomed in and blurry, snaps into focus | <img src="docs/media/punch-zoom.gif" width="200"><br>`punch-zoom`: hard zoom onto the result, with shake | <img src="docs/media/text-drop.gif" width="200"><br>`text-drop`: heavy words that slam in |
+| <img src="docs/media/window-3d.gif" width="200"><br>`window-3d`: your app pops out in perspective | <img src="docs/media/arrow-circle.gif" width="200"><br>`arrow-circle`: hand-drawn stroke on the key detail | <img src="docs/media/before-after-cut.gif" width="200"><br>`before-after-cut`: hard cut from old to new, with a flash |
+| <img src="docs/media/glitch.gif" width="200"><br>`glitch`: bands and split RGB | <img src="docs/media/notification.gif" width="200"><br>`notification`: a phone-style alert slides down | <img src="docs/media/red-strike.gif" width="200"><br>`red-strike`: "3 hours" crossed out → "10 min" |
+| <img src="docs/media/prompt-typing.gif" width="200"><br>`prompt-typing`: a prompt or command types itself | <img src="docs/media/stopwatch.gif" width="200"><br>`stopwatch`: a clock races and stops at "10:00" | |
 
-- Con una **imagen** no hay línea de tiempo: el export dura lo que el efecto.
-- Con un **audio** el export dura lo que el audio, sobre el fondo elegido. Solo sirven **Sin efecto**, las tarjetas y los subtítulos.
-- En este modo, **ProRes y PNG** salen sin tu video ni tu audio: solo el efecto y los subtítulos, transparentes y en su
-  segundo exacto, para ponerlos encima de tu video en DaVinci.
+**Support effects**: `floating-window` (your capture in a card with a label), `split-screen` (two 1080×960 shots),
+`before-after-wipe` (a light curtain reveals the "after"), `big-number` (a counting number), `text-card` (a big phrase),
+`end-card` ("Next: … →" + your @handle), `mystery-cards` ("?" cards that flip), and `no-effect` (your video as is, for captions only).
+**Animated piece**: `nameless-idea` (a thin-line bulb or cloud with sparks and a blinking "???").
 
-## Comprobar la transparencia en DaVinci Resolve
+## Requirements
 
-1. Crea un proyecto con línea de tiempo de **1080×1920** y los mismos fps del export: *File → Project Settings → Master Settings*.
-2. Importa uno de estos al *Media Pool*:
-   - `exports/tarjeta-cierre-…-prores.mov` (ProRes 4444, 60 fps, solo tarjeta y texto).
-   - La carpeta `exports/numero-grande-…-png`: DaVinci la reconoce como un solo clip numerado.
-3. Pon cualquier video tuyo en **V1** y el clip exportado en **V2**, encima.
-4. **Si la transparencia funciona**, ves tu video de V1 alrededor de la tarjeta y a través de las sombras suaves.
-   Si ves un fondo negro, clic derecho sobre el clip → *Clip Attributes → Video → Alpha Mode* y prueba
-   *Straight* y luego *Premultiplied*. Los archivos traen alfa sin premultiplicar (el nombre exacto del menú en
-   español no lo verifiqué).
-5. También puedes comprobarlo sin DaVinci. Este comando debe mostrar `pix_fmt=yuva444p12le` (la "a" es el canal alfa):
+- **Node.js 22.18 or newer**: the server runs `server/index.ts` directly with Node's built-in TypeScript support.
+- **pnpm** (`npm install -g pnpm`).
+- **FFmpeg** with `ffprobe` on your `PATH`. It reads your media, converts ProRes uploads so the browser can play them,
+  and extracts audio for captions. The exports themselves use the FFmpeg bundled with Remotion.
+- Tested on **Windows 11**. Other systems should work, but the UI fonts are Windows system fonts
+  (Segoe UI Variable, Georgia, Cascadia Code), so the effects may look slightly different on another PC.
+  The caption fonts (Montserrat and Bangers) ship with the project and look the same everywhere.
 
-```bash
-ffprobe -v error -show_entries stream=codec_name,profile,pix_fmt -of compact exports/tarjeta-cierre-20260923-210020-prores.mov
+## How to use it
+
+1. **Drop** your video, image or audio into the left panel. It's copied to `media/`.
+   ProRes (which Chrome can't play) is converted with your FFmpeg; your original file isn't touched.
+2. **Click** a hook or effect: it's applied instantly. Each one says what it works with (🎬 video, 🖼 image, 🎵 audio,
+   ✨ text only); the ones that don't fit what you picked are dimmed, with the reason.
+3. Edit texts, colors, duration and speed on the right; the preview updates live.
+   - ◀ ▶ under the preview step frame by frame.
+   - On effects with a zoom point, "🎯 Pick point" lets you click on the key detail.
+   - In texts, words between `*asterisks*` come out in italic serif with the accent color.
+   - **Background** picks the animated style (Aurora, Dots, Gradient, Grid, Grain, Code or Solid) and its colors.
+4. **Export** at 30 or 60 fps. Files land in `exports/`:
+   - **MP4 (H.264)**: always with the background, ready to upload.
+   - **ProRes 4444 (.mov)**: transparent background, to layer in DaVinci Resolve or any editor.
+   - **PNG sequence**: transparent, one PNG per frame.
+
+The UI speaks English and Spanish (ES/EN switch in the header; it follows your browser's language at first).
+Everything runs on your PC: the server only listens on `127.0.0.1` and your files are never uploaded.
+
+### Apply to my video, or effect only
+
+With a **video** selected, **Time → What do you export?** has two modes:
+
+- **Apply to my video**: the export lasts your whole video and keeps its audio. The effect covers one span: pick where
+  with **Starts at** (or drag the span on the bar under the preview) and how long with **Effect duration**.
+  Hooks go at the start, cards on top of your video with a dark scrim, and full-length formats like Split screen last the whole video.
+- **Effect only**: a short standalone clip, silent, to place in your editor.
+
+With an **image** there's no timeline: the export lasts as long as the effect. With an **audio** file the export lasts
+as long as the audio, over the chosen background; only cards, captions and "No effect" apply.
+
+### Auto-captions
+
+Captions are a layer that goes on top of **any** effect.
+
+1. Pick your video or audio **with a voice** and turn on captions in the **Captions** panel.
+2. Choose quality (Fast, Good or Best) and language, and press **🎙 Transcribe**. The first time it installs
+   Whisper (whisper.cpp) and downloads the model into `.whisper/` (Good ≈ 470 MB, Best ≈ 1.5 GB). After that it runs offline.
+3. Fix any word Whisper got wrong (Enter saves; empty deletes; two words split the time).
+4. Pick a style:
+
+| Style | Looks like |
+|---|---|
+| Bold yellow | Thick uppercase (Montserrat) with a black outline; the spoken word turns yellow |
+| Comic | Comic lettering (Bangers) in italics; each word pops and the active one glows green |
+| Karaoke | The whole phrase visible, with a colored box behind the spoken word |
+| Pop | One huge word at a time that bounces |
+| Clean | Minimal: what's still to be said is dim, no outline |
+| Editorial | Words come in blurred and the active one turns into a colored italic serif |
+
+5. Export the MP4 with the captions burned in, ProRes/PNG with only the captions (use "No effect"), or download **SRT / VTT**.
+
+### Checking transparency in DaVinci Resolve
+
+Put your footage on V1 and the ProRes export (or the PNG folder, which DaVinci reads as one clip) on V2.
+If you see black instead of your footage, right-click the clip → *Clip Attributes → Video → Alpha Mode* and try
+*Straight*, then *Premultiplied*. You can also check with `ffprobe`: the stream should say `pix_fmt=yuva444p12le`
+(the "a" is the alpha channel).
+
+## What it isn't
+
+- **One effect at a time.** You apply one hook or effect (plus captions) per export. Several effects in one video
+  (hook at the start, card in the middle, end card) means exporting each and combining them in your editor.
+- **Not a video editor.** There's no multi-track timeline, no cutting and no music. It makes the pieces; your editor assembles them.
+
+## Add a new effect
+
+1. Create `src/effects/hooks/MyEffect.tsx` (or `src/effects/support/`). Copy a similar one as a starting point.
+   Export an `EffectDef` with `id`, `name`, `description`, `defaults`, `params` and `component`.
+   `name`, `description` and param labels are `{ en, es }`; sample texts go in English in `defaults` and in Spanish
+   in `localized.es`.
+2. Animate **only** from time: `t = timeOf(useCurrentFrame(), fps, speed)`. No `Date.now()`, `Math.random()`
+   or CSS animations: that's what keeps the frame-by-frame render identical to the preview.
+3. Register it in `src/registry.tsx`. It shows up in the app and in the render.
+4. Run `pnpm test` and `pnpm typecheck`.
+
+Want a first contribution? See [good first issues](docs/good-first-issues.md).
+
+## Project structure
+
+```
+src/theme.ts            Aurora colors and fonts
+src/lib/                pure logic (animation, layout, text, captions, i18n) + tests
+src/components/         backgrounds, media, window, animated text, captions layer
+src/effects/            hooks/, support/, pieces/ and "No effect"
+src/registry.tsx        effect list + shared wrapper: background, your video with audio, effect span and captions
+src/remotion/           render entry (one composition per effect)
+app/                    local app (React + Remotion Player)
+server/                 local server: uploads, Range serving, Whisper transcription, export with @remotion/renderer
+docs/                   phone camera hooks guide, why Remotion, good first issues
 ```
 
-## Qué trae la biblioteca
-
-| A. Hooks (0–2 s) | B. Efectos de apoyo |
+| Command | What it does |
 |---|---|
-| `enfoque-golpe`: entra borroso y encaja nítido | `ventana-flotante`: tu captura en una tarjeta con etiqueta |
-| `zoom-brusco`: zoom al resultado con temblor y rótulo | `mitad-y-mitad`: dos tomas de 1080×960, animación transparente arriba y tu video completo abajo |
-| `texto-cae`: palabras que caen con golpe | `antes-despues`: cortina de luz que revela el "ahora" |
-| `ventana-3d`: la app salta en perspectiva | `numero-grande`: cifra que sube ("60 fps", "S/ 20") |
-| `flecha-circulo`: trazo a mano sobre el dato | `tarjeta-texto`: frase grande con fuerza |
-| `antes-despues-golpe`: cambio seco con destello | `tarjeta-cierre`: "Próximo: … →" + @chito.dev |
-| `glitch`: bandas y RGB separado | `lista-misterio`: cartas "?" que se voltean |
-| `notificacion`: aviso tipo celular que baja | `sin-efecto`: tu video tal cual (para ponerle solo subtítulos) |
-| `tachon-rojo`: "3 horas" tachado en rojo → "10 min" | |
-| `prompt-escribe`: prompt o comando que se escribe solo | |
-| `cronometro`: reloj que corre rápido y frena en "10:00" | |
+| `pnpm dev` | opens the app at http://localhost:3210 |
+| `pnpm test` | tests for the pure logic (`node --test`) |
+| `pnpm typecheck` | type-checks with TypeScript |
 
-## Subtítulos automáticos
+## Known limits
 
-Los subtítulos son una capa que va encima de **cualquier** efecto (o de "Sin efecto").
+- **H.264 on the CPU**: Remotion doesn't use AMD GPUs to encode. A 2–3 s export took 5–13 s on the test PC; the first one takes longer while it bundles.
+- **Audio**: "Apply to my video" keeps your video's audio; "Effect only" clips are silent.
 
-1. Elige tu video o audio **con voz** y, en el bloque **Subtítulos** de la derecha, activa
-   "Poner subtítulos de tu voz encima". Hasta que transcribas ves una frase de ejemplo.
-2. Elige la calidad (Rápido, Bueno o Mejor) y el idioma, y pulsa **🎙 Transcribir mi video** (o **mi audio**).
-   Cada archivo guarda su transcripción: si cambias de video y vuelves, sigue ahí.
-   - La primera vez instala Whisper (whisper.cpp) y baja el modelo en `.whisper/`: Bueno pesa ~470 MB y Mejor ~1.5 GB.
-     Después ya no descarga nada y todo corre en tu PC.
-   - La transcripción se guarda junto al video en `media/`, así que volver a pedirla es instantáneo.
-3. Corrige las palabras que Whisper entendió mal (le pasa con "Claude Code", "pnpm", nombres…).
-   Enter guarda; vacía la borra; escribir dos palabras las reparte en el mismo tiempo. Clic en el tiempo te lleva ahí.
-4. Elige el estilo:
+## License
 
-| Estilo | Cómo se ve |
-|---|---|
-| Hormozi | Mayúsculas gruesas (Montserrat) con borde negro; la palabra que dices se pinta de amarillo |
-| MrBeast | Letra de cómic (Bangers) en itálica; cada palabra salta al decirla y la activa brilla en verde |
-| Karaoke | La frase entera visible y una caja de color detrás de la palabra que dices |
-| Pop | Una sola palabra enorme que rebota |
-| Limpio | Minimalista: lo que falta decir va tenue, sin borde |
-| Editorial | Como Baena: las palabras entran desenfocadas y la activa pasa a serif itálica de color |
+The code is [MIT](LICENSE). **Remotion has its own license**: it's free for individuals, companies of up to 3 people
+and non-profits; bigger for-profit companies need a [Remotion Company License](https://www.remotion.dev/license).
+The caption fonts are under the [SIL Open Font License](assets/fonts/OFL.txt).
 
-5. Ajusta palabras a la vez, color, altura y tamaño. Si ves los subtítulos adelantados o atrasados, muévelos con
-   "Adelantar / atrasar".
-6. Exporta:
-   - **MP4**: tu video con tu voz, el efecto y los subtítulos quemados, listo para subir. Dura lo mismo que tu video.
-   - **ProRes o PNG**: con "Sin efecto", solo los subtítulos con fondo transparente, para ponerlos encima en DaVinci.
-   - **⬇ SRT / ⬇ VTT**: la transcripción como archivo de subtítulos (CapCut, DaVinci, Premiere, YouTube).
-
-**C. Piezas animadas** (van solas, no sobre un video):
-- `idea-sin-nombre`: bombilla o nube de líneas finas, destellos que no forman nada y "???" que parpadea.
-  - Ocupa los ~800 px de arriba, para usarla en mitad y mitad con tu grabación abajo.
-  - "Bajar el dibujo" viene en 80 px para que no la tapen las pestañas de TikTok.
-  - Lienzo "1080×960 (centrada)": solo la mitad de arriba, con el dibujo centrado y 15 % más grande.
-  - Exports listos en `assets/video 1/`: vertical (MP4 y ProRes) y `idea-sin-nombre-1080x960-transparente.mov`.
-
-La investigación, el catálogo completo y la comparación de herramientas están en [docs/investigacion.md](docs/investigacion.md).
-La guía de hooks con el celular está en [docs/guia-celular.md](docs/guia-celular.md).
-
-## Agregar un efecto nuevo
-
-1. Crea `src/effects/hooks/MiEfecto.tsx` o `src/effects/apoyo/MiEfecto.tsx`. Toma uno parecido como modelo.
-   Exporta un `EffectDef` con `id`, `defaults`, `params` y `component`.
-2. Anímalo **solo** con el tiempo `t = timeOf(useCurrentFrame(), fps, speed)`. Nada de `Date.now()`,
-   `Math.random()` ni animaciones CSS: así el render cuadro por cuadro es idéntico a la vista previa.
-3. Regístralo en `src/registry.tsx`. Aparece solo en la app y en el render.
-
-## Estructura
-
-```
-src/brand.ts            colores Aurora y fuentes
-src/lib/                matemática pura (animación, geometría, texto) + pruebas
-src/components/         fondos, tarjeta, ventana, texto animado, capa de subtítulos
-src/effects/            hooks, efectos de apoyo y "Sin efecto"
-src/registry.tsx        lista de efectos + envoltura: fondo, tu video con audio, tramo del efecto y subtítulos
-src/remotion/           entrada para el render (una composición por efecto)
-app/                    mini app (React + Remotion Player)
-server/                 servidor local: sube medios, sirve con Range, transcribe con Whisper y exporta con @remotion/renderer
-```
-
-## Comandos
-
-| Comando | Qué hace |
-|---|---|
-| `pnpm dev` | abre la app en http://localhost:3210 |
-| `pnpm test` | pruebas de la lógica pura (`node --test`) |
-| `pnpm typecheck` | revisa los tipos con TypeScript |
-| `pnpm marca` | exporta las imágenes de marca (perfil y portada de X) a `assets/marca/` |
-
-## Límites conocidos
-- **Audio**: en "Aplicar a mi video" el MP4 lleva el audio de tu video. En "Solo el efecto", el clip sale en silencio.
-- **Un efecto por video**: por ahora se aplica un efecto (más los subtítulos). Varios efectos en un mismo video
-  (hook al inicio, tarjeta a la mitad, cierre al final) necesitan una línea de tiempo con capas.
-- **H.264 por CPU**: Remotion no usa tu GPU AMD para codificar.
-- **Fuentes**: se usan las de Windows (Segoe UI Variable, Georgia, Cascadia Code). En otra PC podrían verse distintas.
-  Las de los subtítulos (Montserrat y Bangers) van dentro del proyecto en `assets/fonts/`.
+More: [camera hooks with your phone](docs/phone-hooks.md) · [why Remotion](docs/why-remotion.md)

@@ -7,43 +7,45 @@ const video: MediaRef = { src: 'v', kind: 'video', name: 'v.mp4', width: 1080, h
 const audio: MediaRef = { src: 'a', kind: 'audio', name: 'a.mp3', width: 0, height: 0, durationSec: 8 };
 const image: MediaRef = { src: 'i', kind: 'image', name: 'i.png', width: 100, height: 100 };
 
-test('onVideoOf deduce el tipo si el efecto no lo dice', () => {
+test('onVideoOf infers the type when the effect does not set it', () => {
   assert.equal(onVideoOf({ group: 'hook', usesMedia: true }), 'moment');
-  assert.equal(onVideoOf({ group: 'apoyo', usesMedia: false }), 'overlay');
-  assert.equal(onVideoOf({ group: 'pieza', usesMedia: false }), 'none');
-  assert.equal(onVideoOf({ group: 'apoyo', usesMedia: true, onVideo: 'full' }), 'full');
+  assert.equal(onVideoOf({ group: 'support', usesMedia: false }), 'overlay');
+  assert.equal(onVideoOf({ group: 'piece', usesMedia: false }), 'none');
+  assert.equal(onVideoOf({ group: 'support', usesMedia: true, onVideo: 'full' }), 'full');
 });
 
-test('planTimeline: al inicio, al final, dentro del video y todo el video', () => {
+test('planTimeline: at the start, at the end, inside the video and the whole video', () => {
   assert.deepEqual(planTimeline({ onVideo: 'moment', totalSec: 12, effectSec: 2 }), { startSec: 0, effectSec: 2 });
   assert.deepEqual(planTimeline({ onVideo: 'overlay', totalSec: 12, effectSec: 3, defaultAt: 'end' }), { startSec: 9, effectSec: 3 });
-  // Si lo mueves más allá del final, se queda pegado al final.
+  // Moved past the end, it sticks to the end.
   assert.deepEqual(planTimeline({ onVideo: 'moment', totalSec: 12, effectSec: 2, startSec: 11 }), { startSec: 10, effectSec: 2 });
   assert.deepEqual(planTimeline({ onVideo: 'moment', totalSec: 12, effectSec: 2, startSec: -3 }), { startSec: 0, effectSec: 2 });
-  // Video más corto que el efecto: el efecto se recorta.
+  // Video shorter than the effect: the effect is trimmed.
   assert.deepEqual(planTimeline({ onVideo: 'moment', totalSec: 1.5, effectSec: 2 }), { startSec: 0, effectSec: 1.5 });
-  // Al final de un audio de 7.827982 s: en centésimas, sin pasarse.
+  // At the end of a 7.827982 s audio: in hundredths, without going over.
   assert.deepEqual(planTimeline({ onVideo: 'overlay', totalSec: 7.827982, effectSec: 3, defaultAt: 'end' }), { startSec: 4.82, effectSec: 3 });
   assert.deepEqual(planTimeline({ onVideo: 'full', totalSec: 12, effectSec: 5, startSec: 4 }), { startSec: 0, effectSec: 12 });
 });
 
-test('fadeOut vale 1 y baja a 0 en los últimos cuadros', () => {
+test('fadeOut is 1 and drops to 0 over the last frames', () => {
   assert.equal(fadeOut(0, 60, 30), 1);
   assert.equal(fadeOut(50, 60, 30), 1);
   assert.equal(fadeOut(55, 60, 30), 5 / 9);
   assert.equal(fadeOut(60, 60, 30), 0);
 });
 
-test('compatibility: con un audio solo no van efectos que necesitan imagen', () => {
+test('compatibility: with audio only, effects that need an image are not allowed', () => {
   assert.equal(compatibility('moment', 'hook', video), null);
-  assert.equal(compatibility('overlay', 'apoyo', audio), null);
-  assert.match(compatibility('moment', 'hook', audio) ?? '', /Necesita imagen/);
-  assert.match(compatibility('full', 'apoyo', audio) ?? '', /Necesita imagen/);
-  // "Sin efecto" dura todo, pero con un audio es el fondo con tu voz.
+  assert.equal(compatibility('overlay', 'support', audio), null);
+  const reason = compatibility('moment', 'hook', audio);
+  assert.match(reason?.en ?? '', /Needs an image/);
+  assert.match(reason?.es ?? '', /Necesita imagen/);
+  assert.match(compatibility('full', 'support', audio)?.en ?? '', /Needs an image/);
+  // "No effect" lasts the whole video, but with audio it's the background with your voice.
   assert.equal(compatibility('full', 'base', audio), null);
 });
 
-test('hasTimeline y formatDuration', () => {
+test('hasTimeline and formatDuration', () => {
   assert.equal(hasTimeline(video), true);
   assert.equal(hasTimeline(audio), true);
   assert.equal(hasTimeline(image), false);

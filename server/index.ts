@@ -1,12 +1,14 @@
-// Servidor local de la mini app. Solo escucha en 127.0.0.1: tus archivos no salen de tu PC.
+// Local server for the app. It only listens on 127.0.0.1: your files never leave your PC.
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { pipeline } from 'node:stream/promises';
 import { createServer as createVite } from 'vite';
+import { tr, type Lang } from '../src/lib/i18n.ts';
 import { browserPlan, isTrustedRequest, mediaKind, probeMedia, safeName, serveFile, transcodeArgs } from './files.ts';
 import { cancelJob, EXPORT_DIR, getJob, startExport, type ExportFormat } from './render.ts';
+import { runFfmpeg } from './ffmpeg.ts';
 import { getTranscribeJob, startTranscription, WHISPER_MODELS, type TranscribeLang, type WhisperModel } from './transcribe.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -17,6 +19,9 @@ const ORIGIN = `http://localhost:${PORT}`;
 
 fs.mkdirSync(MEDIA_DIR, { recursive: true });
 
+/** UI language of the request (the app sends it in `x-lang`), for error messages. */
+const langOf = (req: http.IncomingMessage): Lang => (req.headers['x-lang'] === 'es' ? 'es' : 'en');
+
 const json = (res: http.ServerResponse, status: number, body: unknown) => {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(body));
@@ -24,12 +29,12 @@ const json = (res: http.ServerResponse, status: number, body: unknown) => {
 
 const MAX_JSON = 1_000_000;
 const readJson = async (req: http.IncomingMessage): Promise<any> => {
-  if (!String(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('Se esperaba JSON');
+  if (!String(req.headers['content-type'] ?? '').startsWith('application/json')) throw new Error('Expected JSON');
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
     size += (c as Buffer).length;
-    if (size > MAX_JSON) throw new Error('Petición demasiado grande');
+    if (size > MAX_JSON) throw new Error('Request too large');
     chunks.push(c as Buffer);
   }
   return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
@@ -47,18 +52,17 @@ const mediaRef = (name: string) => {
   };
 };
 
-const runFfmpeg = (args: string[]) =>
-  new Promise<void>((resolve, reject) => {
-    const p = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', ...args], { stdio: ['ignore', 'ignore', 'pipe'] });
-    let err = '';
-    p.stderr.on('data', (d) => (err += d));
-    p.on('error', reject);
-    p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(err.trim() || `FFmpeg salió con código ${code}`))));
-  });
+const uniqueName = (name: string): string => {
+  const ext = path.extname(name);
+  const stem = name.slice(0, name.length - ext.length);
+  let candidate = name;
+  for (let i = 2; fs.existsSync(path.join(MEDIA_DIR, candidate)); i++) candidate = `${stem}-${i}${ext}`;
+  return candidate;
+};
 
 /**
- * Si el navegador no puede leer el video subido (p. ej. ProRes), lo convierte con tu FFmpeg
- * y deja solo la versión convertida en media/ (tu archivo original no se toca).
+ * If the browser can't read the uploaded video (e.g. ProRes), converts it with your FFmpeg
+ * and keeps only the converted copy in media/ (your original file is untouched).
  */
 const makeBrowserReadable = async (name: string): Promise<string> => {
   if (mediaKind(name) !== 'video') return name;
@@ -68,7 +72,7 @@ const makeBrowserReadable = async (name: string): Promise<string> => {
   if (!plan) return name;
   const stem = name.slice(0, name.length - path.extname(name).length);
   const out = uniqueName(`${stem}${plan === 'webm-alpha' ? '.webm' : '.mp4'}`);
-  console.log(`Convirtiendo ${name} (${codec}, ${pixFmt}) → ${out}`);
+  console.log(`Converting ${name} (${codec}, ${pixFmt}) → ${out}`);
   try {
     await runFfmpeg(transcodeArgs(plan, file, path.join(MEDIA_DIR, out)));
   } finally {
@@ -88,12 +92,10 @@ const mediaList = () =>
     }
   });
 
-const uniqueName = (name: string): string => {
-  const ext = path.extname(name);
-  const stem = name.slice(0, name.length - ext.length);
-  let candidate = name;
-  for (let i = 2; fs.existsSync(path.join(MEDIA_DIR, candidate)); i++) candidate = `${stem}-${i}${ext}`;
-  return candidate;
+/** Opens a folder in the system file manager. */
+const openFolder = (dir: string) => {
+  const cmd = process.platform === 'win32' ? 'explorer.exe' : process.platform === 'darwin' ? 'open' : 'xdg-open';
+  spawn(cmd, [dir], { detached: true, stdio: 'ignore' }).on('error', () => undefined).unref();
 };
 
 const vite = await createVite({
@@ -105,6 +107,8 @@ const vite = await createVite({
 const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> => {
   const url = new URL(req.url ?? '/', ORIGIN);
   const p = url.pathname;
+  const lang = langOf(req);
+  const fail = (status: number, en: string, es: string) => (json(res, status, { error: tr({ en, es }, lang) }), true);
 
   if (p.startsWith('/media/') && (req.method === 'GET' || req.method === 'HEAD')) {
     return serveFile(req, res, MEDIA_DIR, decodeURIComponent(p.slice('/media/'.length)));
@@ -113,8 +117,12 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
 
   if (p === '/api/upload' && req.method === 'POST') {
     const name = uniqueName(safeName(decodeURIComponent(String(req.headers['x-filename'] ?? ''))));
-    const kind = mediaKind(name);
-    if (!kind) return json(res, 400, { error: 'Solo videos (mp4, mov, webm, mkv), imágenes (png, jpg, webp, gif) o audios (mp3, wav, m4a, ogg, flac).' }), true;
+    if (!mediaKind(name))
+      return fail(
+        400,
+        'Only videos (mp4, mov, webm, mkv), images (png, jpg, webp, gif) or audio (mp3, wav, m4a, ogg, flac).',
+        'Solo videos (mp4, mov, webm, mkv), imágenes (png, jpg, webp, gif) o audios (mp3, wav, m4a, ogg, flac).',
+      );
     const file = path.join(MEDIA_DIR, name);
     await pipeline(req, fs.createWriteStream(file));
     try {
@@ -122,14 +130,14 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
     } catch (err) {
       fs.rmSync(file, { force: true });
       console.error(err);
-      return json(res, 400, { error: `FFmpeg no pudo leer o convertir ${name}.` }), true;
+      return fail(400, `FFmpeg couldn't read or convert ${name}.`, `FFmpeg no pudo leer o convertir ${name}.`);
     }
   }
 
   if (p === '/api/export' && req.method === 'POST') {
     const body = await readJson(req);
     const format = body.format as ExportFormat;
-    if (!['mp4', 'prores', 'png'].includes(format)) return json(res, 400, { error: 'Formato inválido' }), true;
+    if (!['mp4', 'prores', 'png'].includes(format)) return fail(400, 'Invalid format', 'Formato inválido');
     const job = startExport(String(body.effectId), body.props ?? {}, format);
     return json(res, 200, { id: job.id }), true;
   }
@@ -137,28 +145,31 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
   if (jobMatch) {
     if (jobMatch[2] && req.method === 'POST') return json(res, 200, { ok: cancelJob(jobMatch[1]) }), true;
     const job = getJob(jobMatch[1]);
-    if (!job) return json(res, 404, { error: 'No existe ese export' }), true;
+    if (!job) return fail(404, 'No such export', 'No existe ese export');
     const { cancel, ...visible } = job;
     return json(res, 200, visible), true;
   }
+
   if (p === '/api/transcribe' && req.method === 'POST') {
     const body = await readJson(req);
     const name = path.basename(String(body.name ?? ''));
     const file = path.join(MEDIA_DIR, name);
     const kind = mediaKind(name);
-    if ((kind !== 'video' && kind !== 'audio') || !fs.existsSync(file)) return json(res, 400, { error: 'Elige un video o audio con voz.' }), true;
+    if ((kind !== 'video' && kind !== 'audio') || !fs.existsSync(file))
+      return fail(400, 'Pick a video or audio file with a voice.', 'Elige un video o audio con voz.');
     const model = WHISPER_MODELS.includes(body.model) ? (body.model as WhisperModel) : 'small';
-    const lang: TranscribeLang = ['es', 'en', 'auto'].includes(body.lang) ? body.lang : 'es';
-    return json(res, 200, { id: startTranscription(file, model, lang).id }), true;
+    const speech: TranscribeLang = ['es', 'en', 'auto'].includes(body.lang) ? body.lang : 'es';
+    return json(res, 200, { id: startTranscription(file, model, speech, lang).id }), true;
   }
   const trMatch = /^\/api\/transcribe\/([\w-]+)$/.exec(p);
   if (trMatch && req.method === 'GET') {
     const job = getTranscribeJob(trMatch[1]);
-    return job ? json(res, 200, job) : json(res, 404, { error: 'No existe esa transcripción' }), true;
+    return job ? (json(res, 200, job), true) : fail(404, 'No such transcription', 'No existe esa transcripción');
   }
+
   if (p === '/api/open-exports' && req.method === 'POST') {
     fs.mkdirSync(EXPORT_DIR, { recursive: true });
-    spawn('explorer.exe', [EXPORT_DIR], { detached: true, stdio: 'ignore' }).unref();
+    openFolder(EXPORT_DIR);
     return json(res, 200, { ok: true }), true;
   }
   return false;
@@ -169,17 +180,17 @@ http
     try {
       if (!isTrustedRequest(req.headers.host, req.headers.origin, PORT)) {
         res.writeHead(403);
-        res.end('Solo para uso local');
+        res.end('Local use only');
         return;
       }
       if (await api(req, res)) return;
       vite.middlewares(req, res, () => {
         res.statusCode = 404;
-        res.end('No encontrado');
+        res.end('Not found');
       });
     } catch (err) {
       console.error(err);
       if (!res.headersSent) json(res, 500, { error: (err as Error).message });
     }
   })
-  .listen(PORT, HOST, () => console.log(`\n  Hooks visuales listo en ${ORIGIN}\n`));
+  .listen(PORT, HOST, () => console.log(`\n  Visual Hooks ready at ${ORIGIN}\n`));

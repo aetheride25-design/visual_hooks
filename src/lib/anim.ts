@@ -1,10 +1,10 @@
-// Matemática de animación pura: sin React ni DOM, así se puede probar con node --test.
-// Todo depende solo del tiempo `t` (segundos de animación), nunca del reloj real:
-// eso es lo que hace que la vista previa y el render cuadro por cuadro coincidan.
+// Pure animation math: no React or DOM, so it can be tested with node --test.
+// Everything depends only on the time `t` (animation seconds), never on the real clock:
+// that is what keeps the preview and the frame-by-frame render in sync.
 
 export const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
-/** Avance 0→1 de un tramo que empieza en `start` y dura `dur` segundos. */
+/** 0→1 progress of a span that starts at `start` and lasts `dur` seconds. */
 export const progress = (t: number, start: number, dur: number): number =>
   dur <= 0 ? (t >= start ? 1 : 0) : clamp01((t - start) / dur);
 
@@ -15,19 +15,19 @@ export const easeInOutCubic = (p: number): number =>
   p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2;
 export const easeOutExpo = (p: number): number => (p >= 1 ? 1 : 1 - 2 ** (-10 * p));
 export const easeInExpo = (p: number): number => (p <= 0 ? 0 : 2 ** (10 * p - 10));
-/** Se pasa un poco y vuelve: da el "golpe" de los textos que caen. */
+/** Overshoots a little and settles back: the "punch" of dropping text. */
 export const easeOutBack = (p: number, overshoot = 1.9): number => {
   const c3 = overshoot + 1;
   return 1 + c3 * (p - 1) ** 3 + overshoot * (p - 1) ** 2;
 };
 
-/** Tiempo de animación a partir del cuadro. `speed` acelera o frena todo el efecto. */
+/** Animation time from the frame. `speed` speeds up or slows down the whole effect. */
 export const timeOf = (frame: number, fps: number, speed: number): number =>
   (frame / fps) * speed;
 
 /**
- * Temblor determinista (sin Math.random) que se apaga solo.
- * Devuelve el desplazamiento en px para el tiempo `t` desde el impacto.
+ * Deterministic shake (no Math.random) that dies out on its own.
+ * Returns the offset in px at time `t` since the impact.
  */
 export const shake = (t: number, amp: number, dur: number, seed = 1): { x: number; y: number } => {
   if (t < 0 || t >= dur || amp === 0) return { x: 0, y: 0 };
@@ -39,34 +39,34 @@ export const shake = (t: number, amp: number, dur: number, seed = 1): { x: numbe
   };
 };
 
-/** Valor intermedio de un contador que sube, redondeado a `decimals`. */
+/** Intermediate value of a counter going up, rounded to `decimals`. */
 export const countValue = (target: number, p: number, decimals: number): number => {
   const f = 10 ** decimals;
   return Math.round(target * easeOutExpo(clamp01(p)) * f) / f;
 };
 
-/** Formato peruano: separador de miles "," y decimales ".". */
+/** Thousands separator "," and decimal point ".". */
 export const formatNumber = (n: number, decimals: number): string =>
   n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 /**
- * Lo que ya se "escribió" de `text` en el tiempo `t`, a `cps` caracteres por segundo.
- * Cuenta por caracteres reales (tildes y emojis no se parten a la mitad).
+ * The part of `text` already "typed" at time `t`, at `cps` characters per second.
+ * Counts real characters (accented letters and emojis are never split in half).
  */
 export const typedText = (text: string, t: number, start: number, cps: number): string => {
   const chars = Array.from(text);
   if (t < start) return '';
-  // +1e-6: que 0.7 − 0.5 = 0.19999… no se coma una letra por redondeo.
+  // +1e-6: so 0.7 − 0.5 = 0.19999… doesn't lose a letter to rounding.
   return chars.slice(0, Math.min(chars.length, Math.floor((t - start) * cps + 1e-6))).join('');
 };
 
-/** Segundo en que termina de escribirse `text`. */
+/** Second at which `text` finishes typing. */
 export const typingEnd = (text: string, start: number, cps: number): number => start + Array.from(text).length / cps;
 
-/** Cursor que parpadea 2 veces por segundo (encendido la primera mitad de cada ciclo). */
+/** Cursor that blinks twice per second (on for the first half of each cycle). */
 export const cursorOn = (t: number): boolean => ((t * 2) % 1 + 1) % 1 < 0.5;
 
-/** Reloj "m:ss" o "h:mm:ss" a partir de segundos (se trunca, como un cronómetro). */
+/** "m:ss" or "h:mm:ss" clock from seconds (truncated, like a stopwatch). */
 export const formatClock = (seconds: number): string => {
   const s = Math.max(0, Math.floor(seconds));
   const h = Math.floor(s / 3600);

@@ -25,7 +25,7 @@ body {
   overflow: hidden;
 }
 
-/* Luz difuminada de los tres colores detrás de la interfaz */
+/* Blurred light in the three colors behind the UI */
 body::before {
   content: '';
   position: fixed;
@@ -177,7 +177,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .bar { height: 6px; border-radius: 3px; background: var(--base); overflow: hidden; }
 .bar div { height: 100%; background: linear-gradient(90deg, var(--mint), var(--blue)); transition: width 0.3s; }
 
-/* Subtítulos: transcripción y corrección de palabras */
+/* Captions: transcript and word fixes */
 .captions small { color: var(--muted); font-size: 11px; line-height: 1.4; }
 .captions .primary:disabled { opacity: 0.45; box-shadow: none; }
 .words {
@@ -201,19 +201,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
   flex: 1;
 }
 
-/* Tipo y duración de cada archivo */
+/* Kind and duration of each file */
 .media-name { display: flex; flex-direction: column; min-width: 0; }
 .media-name > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-name small { color: var(--muted); font-size: 11px; }
 
-/* Con qué funciona cada efecto */
+/* What each effect works with */
 .group-hint { margin: -2px 2px 4px; color: var(--muted); font-size: 11px; }
 .effect .tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0; }
 .effect .tags em { font-style: normal; font-size: 10.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--base); color: var(--muted); }
 .effect.off { opacity: 0.42; cursor: not-allowed; }
 .effect.off:hover { background: transparent; }
 
-/* Línea de tiempo bajo la vista previa */
+/* Timeline under the preview */
 .stage.timed .phone { height: calc(100vh - 150px); }
 .timeline { width: min(520px, 100%); display: flex; flex-direction: column; gap: 4px; }
 .timeline .track {
@@ -230,3 +230,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .timeline .span span { font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 .timeline .playhead { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--text); border-radius: 1px; pointer-events: none; }
 .timeline .ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; padding: 0 2px; }
+/* Language switch in the header */
+.brand .lang { margin-left: auto; padding: 2px; gap: 2px; font-size: 11px; font-weight: 600; }
+.brand .lang button { flex: none; padding: 2px 8px; }

@@ -1,25 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Player, type PlayerRef } from '@remotion/player';
-import { baseDefaults, canvasOf, durationInFrames, effects, findEffect, shells } from '../src/registry.tsx';
+import { baseDefaults, canvasOf, defaultsFor, durationInFrames, effects, findEffect, shells } from '../src/registry.tsx';
 import type { BaseProps, MediaRef } from '../src/lib/types.ts';
-import { mediaRect } from '../src/components/brand.tsx';
-import { captionDefaults, captionParams, type CaptionsSettings } from '../src/components/captions.tsx';
+import { mediaRect } from '../src/components/media.tsx';
+import { captionDefaults, captionParams, demoWords, type CaptionsSettings } from '../src/components/captions.tsx';
 import type { CaptionWord } from '../src/lib/captions.ts';
 import { FRAME } from '../src/lib/frame.ts';
+import { tr } from '../src/lib/i18n.ts';
 import { fitRect, pointToMedia, type Fit } from '../src/lib/layout.ts';
 import { compatibility, hasTimeline, onVideoOf, planTimeline } from '../src/lib/timeline.ts';
-import { listMedia, uploadMedia } from './api.ts';
-import { CaptionsEditor, EffectList, ExportPanel, Field, FrameBar, MediaPanel, TimelineBar } from './panels.tsx';
-import { BackgroundPanel } from './background-panel.tsx';
 import { bgDefaults, type BgProps } from '../src/lib/background.ts';
+import { listMedia, uploadMedia } from './api.ts';
+import { LangSwitch, useLang } from './i18n.tsx';
+import { BackgroundPanel } from './panels/background.tsx';
+import { CaptionsEditor } from './panels/captions.tsx';
+import { EffectList } from './panels/effects.tsx';
+import { ExportPanel } from './panels/export.tsx';
+import { Field } from './panels/field.tsx';
+import { MediaPanel } from './panels/media.tsx';
+import { FrameBar, TimelineBar } from './panels/preview.tsx';
 
 type Overrides = Record<string, Record<string, unknown>>;
 
-/** Dónde empieza el efecto dentro de tu video (se guarda por efecto; no choca con los parámetros del efecto). */
+/** Where the effect starts inside your video (stored per effect; can't clash with the effect's params). */
 const AT = '__startSec';
 
 export const App: React.FC = () => {
-  const [effectId, setEffectId] = useState('enfoque-golpe');
+  const { lang, t } = useLang();
+  const [effectId, setEffectId] = useState('focus-snap');
   const [overrides, setOverrides] = useState<Overrides>({});
   const [media, setMedia] = useState<MediaRef[]>([]);
   const [selectedMedia, setSelectedMedia] = useState<MediaRef | null>(null);
@@ -27,17 +35,18 @@ export const App: React.FC = () => {
   const [speed, setSpeed] = useState(1);
   const [transparent, setTransparent] = useState(false);
   const [bg, setBg] = useState<BgProps>(bgDefaults);
-  /** "Aplicar a mi video" (dura todo tu video) o "Solo el efecto" (clip suelto para DaVinci). */
+  /** "Apply to my video" (lasts your whole video) or "Effect only" (standalone clip for DaVinci). */
   const [mode, setMode] = useState<'video' | 'clip'>('video');
   const [captionsOn, setCaptionsOn] = useState(false);
   const [captions, setCaptions] = useState<CaptionsSettings>(captionDefaults);
-  /** Transcripción de cada archivo: al cambiar de video o audio, cada uno conserva la suya. */
+  /** Transcript per file: switching video or audio, each keeps its own. */
   const [transcripts, setTranscripts] = useState<Record<string, CaptionWord[]>>({});
   const [uploading, setUploading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const player = useRef<PlayerRef>(null);
 
   const def = findEffect(effectId)!;
+  const name = tr(def.name, lang);
   const own = overrides[effectId] ?? {};
   const setOwn = (key: string, value: unknown) =>
     setOverrides((o) => ({ ...o, [effectId]: { ...o[effectId], [key]: value } }));
@@ -45,11 +54,13 @@ export const App: React.FC = () => {
   const onVideo = onVideoOf(def);
   const main = selectedMedia;
   const hasVoice = main?.kind === 'video' || main?.kind === 'audio';
-  // Hasta que transcribas este archivo se ve la frase de ejemplo.
+  // Until you transcribe this file, the sample phrase shows (in the UI language).
   const mine = main ? transcripts[main.name] : undefined;
-  const shownCaptions: CaptionsSettings = mine ? { ...captions, words: mine, wordsFor: main!.name } : { ...captions, wordsFor: '' };
+  const shownCaptions: CaptionsSettings = mine
+    ? { ...captions, words: mine, wordsFor: main!.name }
+    : { ...captions, words: demoWords(lang), wordsFor: '' };
   const effectSec = Number(own.durationSec ?? def.defaultDurationSec);
-  // Con un audio siempre hay línea de tiempo (un clip suelto no tendría imagen); con un video, si eliges "Aplicar".
+  // Audio always gets a timeline (a standalone clip would have no picture); video only with "Apply".
   const timed = hasTimeline(main) && onVideo !== 'none' && (mode === 'video' || main.kind === 'audio');
   const timeline = timed
     ? planTimeline({ onVideo, totalSec: main.durationSec, effectSec, startSec: own[AT] as number | undefined, defaultAt: def.defaultAt })
@@ -59,9 +70,9 @@ export const App: React.FC = () => {
     () =>
       ({
         ...baseDefaults(def),
-        ...def.defaults,
+        ...defaultsFor(def, lang),
         ...own,
-        // En un clip suelto un audio no tiene imagen: se ve la pantalla de ejemplo.
+        // In a standalone clip audio has no picture: the sample screen shows.
         media: main?.kind === 'audio' && !timed ? null : main,
         fps,
         speed,
@@ -71,7 +82,7 @@ export const App: React.FC = () => {
         timeline,
         captions: captionsOn && hasVoice ? shownCaptions : null,
       }) as BaseProps & Record<string, unknown>,
-    [def, own, main, fps, speed, transparent, bg, timed, effectSec, timeline?.startSec, timeline?.effectSec, captionsOn, captions, mine, hasVoice],
+    [def, lang, own, main, fps, speed, transparent, bg, timed, effectSec, timeline?.startSec, timeline?.effectSec, captionsOn, captions, mine, hasVoice],
   );
   const canvas = canvasOf(def, props);
   const total = durationInFrames(props);
@@ -81,19 +92,19 @@ export const App: React.FC = () => {
     listMedia().then(setMedia).catch(() => undefined);
   }, []);
 
-  // Con un audio solo no van los efectos que necesitan imagen: se pasa a "Sin efecto".
+  // Audio only can't take effects that need a picture: switch to "No effect".
   useEffect(() => {
-    if (compatibility(onVideo, def.group, main)) setEffectId('sin-efecto');
+    if (compatibility(onVideo, def.group, main)) setEffectId('no-effect');
   }, [main]);
 
-  // Al elegir un efecto se ve aplicado al instante, desde donde empieza.
+  // Picking an effect shows it applied right away, from where it starts.
   useEffect(() => {
     setPicking(false);
     player.current?.seekTo(effectFrom);
     player.current?.play();
   }, [effectId]);
 
-  // Elegir el punto de zoom con un clic: se muestra el primer cuadro del efecto, donde la captura aún no se movió.
+  // Pick the zoom point with a click: shows the effect's first frame, before the capture moves.
   const hasFocus = def.params.some((p) => p.key === 'focusX');
   const [picking, setPicking] = useState(false);
   const startPicking = () => {
@@ -102,7 +113,7 @@ export const App: React.FC = () => {
     setPicking((v) => !v);
   };
   const onPick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // El Player encaja el lienzo dentro del contenedor (con bandas si no coincide la proporción).
+    // The Player fits the canvas inside the container (letterboxed if the ratio differs).
     const box = e.currentTarget.getBoundingClientRect();
     const view = fitRect(canvas.width, canvas.height, { x: box.left, y: box.top, w: box.width, h: box.height }, 'contain');
     const x = ((e.clientX - view.x) / view.w) * canvas.width;
@@ -114,7 +125,7 @@ export const App: React.FC = () => {
     player.current?.play();
   };
 
-  // Selector de tu video principal dentro del panel del efecto (p. ej. "Toma de abajo" en Mitad y mitad).
+  // Main video picker inside the effect panel (e.g. "Bottom shot" in Split screen).
   const firstMediaParam = def.params.find((p) => p.type === 'media')?.key;
   const mainMediaField = def.mediaLabel ? (
     <Field
@@ -144,13 +155,14 @@ export const App: React.FC = () => {
     player.current?.pause();
     player.current?.seekTo(Math.round((ms / 1000) * fps));
   };
-  const kindWord = main?.kind === 'audio' ? 'audio' : 'video';
+  const kind = main?.kind === 'audio' ? 'audio' : 'video';
 
   return (
     <div className="app">
       <aside className="col left">
         <header className="brand">
-          <span className="dot" /> chitodev <em>hooks visuales</em>
+          <span className="dot" /> {t('brand')}
+          <LangSwitch />
         </header>
         <MediaPanel
           media={media}
@@ -183,7 +195,7 @@ export const App: React.FC = () => {
           />
           {picking && (
             <div className="picker" onClick={onPick}>
-              <span>Haz clic sobre el dato clave</span>
+              <span>{t('pickHere')}</span>
             </div>
           )}
         </div>
@@ -194,7 +206,7 @@ export const App: React.FC = () => {
             startSec={timeline.startSec}
             effectSec={timeline.effectSec}
             fps={fps}
-            label={def.name}
+            label={name}
             movable={onVideo !== 'full'}
             onMove={(s) => setOwn(AT, s)}
           />
@@ -204,17 +216,17 @@ export const App: React.FC = () => {
 
       <aside className="col right">
         <section className="panel">
-          <h2>{def.name}</h2>
-          <p className="desc">{def.description}</p>
+          <h2>{name}</h2>
+          <p className="desc">{tr(def.description, lang)}</p>
           {hasFocus && (
             <button className={`primary ghost pick ${picking ? 'on' : ''}`} onClick={startPicking}>
-              {picking ? 'Haz clic en la vista previa…' : '🎯 Elegir punto sobre la vista previa'}
+              {picking ? t('picking') : t('pickPoint')}
             </button>
           )}
           {def.params.map((p) => (
             <React.Fragment key={p.key}>
               <Field def={p} media={media} value={props[p.key]} onChange={(v) => setOwn(p.key, v)} />
-              {/* Tu video principal va justo debajo de la otra toma, para elegir las dos juntas. */}
+              {/* Your main video goes right below the other shot, to pick both together. */}
               {p.key === firstMediaParam && mainMediaField}
             </React.Fragment>
           ))}
@@ -222,16 +234,16 @@ export const App: React.FC = () => {
         </section>
 
         <section className="panel">
-          <h2>Tiempo</h2>
+          <h2>{t('time')}</h2>
           {main?.kind === 'video' && onVideo !== 'none' && (
             <Field
               def={{
                 key: 'mode',
-                label: '¿Qué exportas?',
+                label: t('whatExport'),
                 type: 'select',
                 options: [
-                  { value: 'video', label: 'Aplicar a mi video' },
-                  { value: 'clip', label: 'Solo el efecto (DaVinci)' },
+                  { value: 'video', label: t('modeVideo') },
+                  { value: 'clip', label: t('modeClip') },
                 ],
               }}
               media={media}
@@ -243,19 +255,24 @@ export const App: React.FC = () => {
             <>
               <p className="desc">
                 {onVideo === 'full'
-                  ? `Dura todo tu ${kindWord} (${props.durationSec.toFixed(1)} s), con su audio.`
-                  : `Tu ${kindWord} dura ${props.durationSec.toFixed(1)} s y conserva su audio. El efecto va de ${timeline.startSec.toFixed(1)} a ${(timeline.startSec + timeline.effectSec).toFixed(1)} s; antes y después sigue tu ${kindWord} normal. Arrastra el tramo en la barra de abajo de la vista previa.`}
+                  ? t('timedFull', { kind, d: props.durationSec.toFixed(1) })
+                  : t('timedMoment', {
+                      kind,
+                      d: props.durationSec.toFixed(1),
+                      from: timeline.startSec.toFixed(1),
+                      to: (timeline.startSec + timeline.effectSec).toFixed(1),
+                    })}
               </p>
               {onVideo !== 'full' && (
                 <>
                   <Field
-                    def={{ key: AT, label: 'Empieza en (s)', type: 'number', min: 0, max: Math.max(0, props.durationSec - timeline.effectSec), step: 0.1 }}
+                    def={{ key: AT, label: t('startsAt'), type: 'number', min: 0, max: Math.max(0, props.durationSec - timeline.effectSec), step: 0.1 }}
                     media={media}
                     value={timeline.startSec}
                     onChange={(v) => setOwn(AT, v)}
                   />
                   <Field
-                    def={{ key: 'durationSec', label: 'Duración del efecto (s)', type: 'number', min: 0.5, max: Math.min(10, props.durationSec), step: 0.1 }}
+                    def={{ key: 'durationSec', label: t('effectDuration'), type: 'number', min: 0.5, max: Math.min(10, props.durationSec), step: 0.1 }}
                     media={media}
                     value={timeline.effectSec}
                     onChange={(v) => setOwn('durationSec', v)}
@@ -267,24 +284,24 @@ export const App: React.FC = () => {
             <>
               <p className="desc">
                 {onVideo === 'none'
-                  ? 'Pieza suelta: no va sobre un video. El export dura lo que la pieza.'
+                  ? t('untimedPiece')
                   : main?.kind === 'image'
-                    ? 'Con una imagen no hay línea de tiempo: el export dura lo que el efecto.'
+                    ? t('untimedImage')
                     : main?.kind === 'video'
-                      ? 'Solo el efecto: un clip corto con los primeros segundos de tu video y sin audio, para montarlo en DaVinci.'
-                      : 'Sube o elige un video para aplicarle el efecto. Mientras tanto ves una pantalla de ejemplo.'}
+                      ? t('untimedClip')
+                      : t('untimedNone')}
               </p>
               <Field
-                def={{ key: 'durationSec', label: 'Duración (s)', type: 'number', min: 0.5, max: 10, step: 0.1 }}
+                def={{ key: 'durationSec', label: t('duration'), type: 'number', min: 0.5, max: 10, step: 0.1 }}
                 media={media}
                 value={effectSec}
                 onChange={(v) => setOwn('durationSec', v)}
               />
             </>
           )}
-          {def.id !== 'sin-efecto' && (
+          {def.id !== 'no-effect' && (
             <Field
-              def={{ key: 'speed', label: 'Velocidad de la animación', type: 'number', min: 0.25, max: 3, step: 0.05 }}
+              def={{ key: 'speed', label: t('speed'), type: 'number', min: 0.25, max: 3, step: 0.05 }}
               media={media}
               value={speed}
               onChange={(v) => setSpeed(v as number)}
@@ -293,7 +310,7 @@ export const App: React.FC = () => {
           <Field
             def={{
               key: 'fps',
-              label: 'Cuadros por segundo',
+              label: t('fps'),
               type: 'select',
               options: [
                 { value: '30', label: '30 fps' },
@@ -305,11 +322,7 @@ export const App: React.FC = () => {
             onChange={(v) => setFps(Number(v) as 30 | 60)}
           />
           <Field
-            def={{
-              key: 'transparent',
-              label: timeline ? 'Ver sin tu video (solo efecto y subtítulos, como sale en ProRes)' : 'Fondo transparente (para DaVinci)',
-              type: 'boolean',
-            }}
+            def={{ key: 'transparent', label: timeline ? t('hideVideo') : t('transparentBg'), type: 'boolean' }}
             media={media}
             value={transparent}
             onChange={(v) => setTransparent(Boolean(v))}
@@ -317,11 +330,11 @@ export const App: React.FC = () => {
         </section>
 
         <section className="panel">
-          <h2>Subtítulos</h2>
+          <h2>{t('captions')}</h2>
           {hasVoice ? (
             <>
               <Field
-                def={{ key: 'captionsOn', label: `Poner subtítulos de tu voz encima`, type: 'boolean' }}
+                def={{ key: 'captionsOn', label: t('captionsOn'), type: 'boolean' }}
                 media={media}
                 value={captionsOn}
                 onChange={(v) => setCaptionsOn(Boolean(v))}
@@ -333,7 +346,7 @@ export const App: React.FC = () => {
                     words={shownCaptions.words}
                     wordsFor={shownCaptions.wordsFor}
                     offsetMs={captions.offsetMs}
-                    onChange={(words, wordsFor) => setTranscripts((t) => ({ ...t, [wordsFor]: words }))}
+                    onChange={(words, wordsFor) => setTranscripts((ts) => ({ ...ts, [wordsFor]: words }))}
                     onSeek={seekMs}
                   />
                   {captionParams.map((p) => (
@@ -349,12 +362,12 @@ export const App: React.FC = () => {
               )}
             </>
           ) : (
-            <p className="desc">Elige un video o un audio con tu voz para ponerle subtítulos. Funcionan con cualquier efecto.</p>
+            <p className="desc">{t('captionsNeedVoice')}</p>
           )}
         </section>
 
         <BackgroundPanel value={bg} onChange={setBg} transparent={transparent} />
-        <ExportPanel effectId={effectId} effectName={def.name} props={props} size={canvas} timed={!!timeline} />
+        <ExportPanel effectId={effectId} effectName={name} props={props} size={canvas} timed={!!timeline} />
       </aside>
     </div>
   );
