@@ -3,6 +3,7 @@ import type { Lang } from '../src/lib/i18n.ts';
 import type { MediaRef } from '../src/lib/types.ts';
 
 export type ExportFormat = 'mp4' | 'prores' | 'png';
+export type ExportScale = 1 | 2;
 export type JobState = {
   id: string;
   status: 'preparing' | 'rendering' | 'done' | 'error' | 'cancelled';
@@ -35,11 +36,11 @@ export const uploadMedia = (file: File) =>
     body: file,
   }).then((r) => ok<MediaRef>(r));
 
-export const startExport = (effectId: string, props: Record<string, unknown>, format: ExportFormat) =>
+export const startExport = (effectId: string, props: Record<string, unknown>, format: ExportFormat, scale: ExportScale) =>
   fetch('/api/export', {
     method: 'POST',
     headers: headers(JSON_TYPE),
-    body: JSON.stringify({ effectId, props, format }),
+    body: JSON.stringify({ effectId, props, format, scale }),
   }).then((r) => ok<{ id: string }>(r));
 
 export const getExport = (id: string) => fetch(`/api/export/${id}`, { headers: headers() }).then((r) => ok<JobState>(r));

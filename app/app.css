@@ -163,6 +163,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .formats button span { color: var(--muted); font-size: 11px; }
 .formats button.on { border-color: var(--mint); box-shadow: 0 0 18px rgba(95, 214, 178, 0.15); }
+.scales .hint { margin: 0 2px; color: var(--mint); font-size: 11px; }
 
 .primary {
   width: 100%; padding: 11px; border-radius: 12px; border: 0; font-weight: 700;
