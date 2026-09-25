@@ -131,6 +131,7 @@ src/remotion/           render entry (one composition per effect)
 app/                    local app (React + Remotion Player)
 server/                 local server: uploads, Range serving, Whisper transcription, export with @remotion/renderer
 docs/                   phone camera hooks guide, why Remotion, good first issues
+scripts/                README GIFs rendered with the app itself
 ```
 
 | Command | What it does |
@@ -138,6 +139,7 @@ docs/                   phone camera hooks guide, why Remotion, good first issue
 | `pnpm dev` | opens the app at http://localhost:3210 |
 | `pnpm test` | tests for the pure logic (`node --test`) |
 | `pnpm typecheck` | type-checks with TypeScript |
+| `node scripts/readme-media.ts <clip>` | re-renders the README GIFs through the running app |
 
 ## Known limits
 
