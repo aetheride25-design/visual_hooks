@@ -117,7 +117,7 @@ If you see black instead of your footage, right-click the clip → *Clip Attribu
 3. Register it in `src/registry.tsx`. It shows up in the app and in the render.
 4. Run `pnpm test` and `pnpm typecheck`.
 
-Want a first contribution? See [good first issues](docs/good-first-issues.md).
+Want a first contribution? See [good first issues](docs/good-first-issues.md) and [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Project structure
 

@@ -120,7 +120,7 @@ Si ves negro en vez de tu toma, clic derecho sobre el clip → *Clip Attributes 
 3. Regístralo en `src/registry.tsx`. Aparece solo en la app y en el render.
 4. Corre `pnpm test` y `pnpm typecheck`.
 
-¿Quieres una primera contribución? Mira los [good first issues](docs/good-first-issues.md).
+¿Quieres una primera contribución? Mira los [good first issues](docs/good-first-issues.md) y la [guía para contribuir](CONTRIBUTING.es.md).
 
 ## Estructura
 
