@@ -1,5 +1,5 @@
-import React from 'react';
-import { AbsoluteFill, Img } from 'remotion';
+import React, { createContext, useContext } from 'react';
+import { AbsoluteFill, Img, useCurrentFrame } from 'remotion';
 import { Video } from '@remotion/media';
 import { aurora, fonts } from '../brand.ts';
 import { fitRect, type Fit, type Rect } from '../lib/layout.ts';
@@ -87,7 +87,8 @@ const Placeholder: React.FC = () => {
 export const PLACEHOLDER_SIZE = { width: 1920, height: 1080 };
 
 /** Tamaño real del medio (o del marcador de posición si aún no subiste nada). */
-export const sizeOf = (media: MediaRef | null) => (media ? { width: media.width, height: media.height } : PLACEHOLDER_SIZE);
+export const sizeOf = (media: MediaRef | null) =>
+  media && media.kind !== 'audio' ? { width: media.width, height: media.height } : PLACEHOLDER_SIZE;
 
 /** Dónde queda tu captura dentro de `box` (en px del cuadro 1080×1920). */
 export const mediaRect = (media: MediaRef | null, box: Rect, fit: Fit): Rect => {
@@ -96,11 +97,22 @@ export const mediaRect = (media: MediaRef | null, box: Rect, fit: Fit): Rect => 
 };
 
 /**
- * Tu video (silenciado, exacto al cuadro en el render) o tu imagen, del tamaño de su contenedor.
+ * Tu video (silenciado salvo `muted={false}`, exacto al cuadro en el render) o tu imagen, del tamaño de su contenedor.
  * `width` es el ancho en px al que se dibuja: el marcador de posición lo usa para escalarse.
  */
-export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boolean }> = ({ media, width, loop = false }) => {
-  if (!media) {
+export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boolean; muted?: boolean }> = ({
+  media,
+  width,
+  loop = false,
+  muted = true,
+}) => {
+  // Dentro de un efecto aplicado a tu video, tu video sigue en el segundo en que va (no vuelve a empezar).
+  const clock = useContext(MainVideoClock);
+  const localFrame = useCurrentFrame();
+  const trimBefore = clock && media?.src === clock.src ? Math.max(0, clock.frame - localFrame) : undefined;
+
+  // Un audio no tiene imagen: se ve la pantalla de ejemplo.
+  if (!media || media.kind === 'audio') {
     return (
       <div
         style={{
@@ -117,20 +129,28 @@ export const Media: React.FC<{ media: MediaRef | null; width: number; loop?: boo
   }
   const style: React.CSSProperties = { width: '100%', height: '100%', display: 'block' };
   return media.kind === 'video' ? (
-    <Video src={media.src} muted loop={loop} objectFit="fill" style={style} />
+    <Video src={media.src} muted={muted} loop={loop} trimBefore={trimBefore} objectFit="fill" style={style} />
   ) : (
     <Img src={media.src} style={{ ...style, objectFit: 'fill' }} />
   );
 };
 
+/**
+ * Reloj de tu video principal cuando el efecto se aplica a un tramo de él: su archivo y el cuadro de tu video
+ * que se está dibujando. Con él, cada <Video> de ese archivo dentro de una <Sequence> se recorta por delante
+ * (trimBefore) justo lo que empezó más tarde esa Sequence, y queda al mismo segundo que tu video de fondo.
+ */
+export const MainVideoClock = createContext<{ src: string; frame: number } | null>(null);
+
 /** Medio ubicado en su rectángulo, en coordenadas del cuadro. */
-export const MediaAt: React.FC<{ media: MediaRef | null; rect: Rect; style?: React.CSSProperties; loop?: boolean }> = ({
+export const MediaAt: React.FC<{ media: MediaRef | null; rect: Rect; style?: React.CSSProperties; loop?: boolean; muted?: boolean }> = ({
   media,
   rect,
   style,
   loop,
+  muted,
 }) => (
   <div style={{ position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h, overflow: 'hidden', ...style }}>
-    <Media media={media} width={rect.w} loop={loop} />
+    <Media media={media} width={rect.w} loop={loop} muted={muted} />
   </div>
 );

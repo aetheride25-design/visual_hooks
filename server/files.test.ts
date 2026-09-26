@@ -49,8 +49,16 @@ test('transcodeArgs conserva el alfa solo en la conversión a WebM', () => {
   assert.equal(mp4[mp4.indexOf('-pix_fmt') + 1], 'yuv420p');
 });
 
+test('transcodeArgs conserva el audio (lo necesitan los subtítulos)', () => {
+  assert.ok(!transcodeArgs('mp4', 'in.mov', 'out.mp4').includes('-an'));
+  assert.ok(!transcodeArgs('webm-alpha', 'in.mov', 'out.webm').includes('-an'));
+  assert.equal(transcodeArgs('mp4', 'in.mov', 'out.mp4').at(-1), 'out.mp4');
+});
+
 test('mediaKind distingue video, imagen y otros', () => {
   assert.equal(mediaKind('a.MP4'), 'video');
   assert.equal(mediaKind('a.webp'), 'image');
+  assert.equal(mediaKind('voz.MP3'), 'audio');
+  assert.equal(mediaKind('voz.m4a'), 'audio');
   assert.equal(mediaKind('a.exe'), null);
 });

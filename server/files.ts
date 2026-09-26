@@ -5,6 +5,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export const VIDEO_EXT = ['.mp4', '.mov', '.webm', '.mkv', '.m4v'];
 export const IMAGE_EXT = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
+export const AUDIO_EXT = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.opus', '.flac'];
 
 const MIME: Record<string, string> = {
   '.mp4': 'video/mp4',
@@ -17,18 +18,26 @@ const MIME: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.gif': 'image/gif',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac',
+  '.ogg': 'audio/ogg',
+  '.opus': 'audio/ogg',
+  '.flac': 'audio/flac',
 };
 
-export const mediaKind = (name: string): 'video' | 'image' | null => {
+export const mediaKind = (name: string): 'video' | 'image' | 'audio' | null => {
   const ext = path.extname(name).toLowerCase();
   if (VIDEO_EXT.includes(ext)) return 'video';
   if (IMAGE_EXT.includes(ext)) return 'image';
+  if (AUDIO_EXT.includes(ext)) return 'audio';
   return null;
 };
 
-export type Probe = { width: number; height: number; codec: string; pixFmt: string };
+export type Probe = { width: number; height: number; codec: string; pixFmt: string; durationSec: number | null };
 
-/** Tamaño, códec y formato de píxel del video o imagen, leídos con el ffprobe de tu FFmpeg. Se cachea por archivo. */
+/** Tamaño, códec, formato de píxel y duración del video, imagen o audio, leídos con el ffprobe de tu FFmpeg. Se cachea por archivo. */
 const probeCache = new Map<string, { mtime: number; probe: Probe }>();
 export const probeMedia = (file: string): Probe => {
   const mtime = fs.statSync(file).mtimeMs;
@@ -36,12 +45,25 @@ export const probeMedia = (file: string): Probe => {
   if (hit && hit.mtime === mtime) return hit.probe;
   const out = execFileSync(
     'ffprobe',
-    ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,codec_name,pix_fmt', '-of', 'json', file],
+    ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,codec_name,pix_fmt:format=duration', '-of', 'json', file],
     { encoding: 'utf8' },
   );
-  const s = JSON.parse(out).streams?.[0] ?? {};
-  const probe: Probe = { width: Number(s.width), height: Number(s.height), codec: String(s.codec_name ?? ''), pixFmt: String(s.pix_fmt ?? '') };
-  if (!probe.width || !probe.height) throw new Error(`No pude leer el tamaño de ${path.basename(file)}`);
+  const json = JSON.parse(out);
+  const s = json.streams?.[0] ?? {};
+  const duration = Number(json.format?.duration);
+  const kind = mediaKind(file);
+  const probe: Probe = {
+    width: Number(s.width),
+    height: Number(s.height),
+    codec: String(s.codec_name ?? ''),
+    pixFmt: String(s.pix_fmt ?? ''),
+    durationSec: kind !== 'image' && Number.isFinite(duration) && duration > 0 ? duration : null,
+  };
+  // Un audio no tiene tamaño (o trae solo la carátula): basta con que tenga duración.
+  if (kind === 'audio') {
+    if (!probe.durationSec) throw new Error(`No pude leer la duración de ${path.basename(file)}`);
+    Object.assign(probe, { width: 0, height: 0 });
+  } else if (!probe.width || !probe.height) throw new Error(`No pude leer el tamaño de ${path.basename(file)}`);
   probeCache.set(file, { mtime, probe });
   return probe;
 };
@@ -63,12 +85,16 @@ export const browserPlan = (codec: string, pixFmt: string): 'webm-alpha' | 'mp4'
   return hasAlpha(pixFmt) ? 'webm-alpha' : 'mp4';
 };
 
-/** Argumentos de FFmpeg para esa conversión (sin audio: los videos se usan en silencio). */
+/**
+ * Argumentos de FFmpeg para esa conversión.
+ * El audio se conserva (si lo hay): los subtítulos lo necesitan para transcribir y para el MP4 final.
+ */
 export const transcodeArgs = (plan: 'webm-alpha' | 'mp4', input: string, output: string): string[] =>
   plan === 'webm-alpha'
     ? ['-y', '-i', input, '-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p', '-b:v', '0', '-crf', '18', '-row-mt', '1',
-       '-deadline', 'good', '-cpu-used', '2', '-auto-alt-ref', '0', '-g', '30', '-an', output]
-    : ['-y', '-i', input, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', '-preset', 'medium', '-g', '30', '-an', output];
+       '-deadline', 'good', '-cpu-used', '2', '-auto-alt-ref', '0', '-g', '30', '-c:a', 'libopus', '-b:a', '160k', output]
+    : ['-y', '-i', input, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', '-preset', 'medium', '-g', '30',
+       '-c:a', 'aac', '-b:a', '192k', output];
 
 /** Nombre seguro para guardar en disco: sin rutas, sin caracteres raros. */
 export const safeName = (raw: string): string => {
