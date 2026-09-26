@@ -1,11 +1,11 @@
 import React from 'react';
 import { AbsoluteFill, useVideoConfig } from 'remotion';
-import { fonts } from '../brand.ts';
+import { fonts } from '../theme.ts';
 import { bgPalette, grainSeed, type BgPalette, type BgProps } from '../lib/background.ts';
 
 type BgFC = React.FC<{ t: number; pal: BgPalette }>;
 
-/** Luz difuminada que respira despacio (el fondo Aurora de siempre, ahora con cualquier color). */
+/** Soft light that breathes slowly (the classic Aurora background, now in any color). */
 const Aurora: BgFC = ({ t, pal }) => {
   const [a, b, c] = pal.colors;
   const drift = (phase: number, amp: number) => Math.sin(t * 0.6 + phase) * amp;
@@ -28,8 +28,8 @@ const Aurora: BgFC = ({ t, pal }) => {
   );
 };
 
-/** Malla de puntos finos; un foco de luz la recorre y enciende los puntos que toca. */
-const Puntos: BgFC = ({ t, pal }) => {
+/** Fine dot grid; a spotlight sweeps across it and lights up the dots it touches. */
+const Dots: BgFC = ({ t, pal }) => {
   const { width, height } = useVideoConfig();
   const [a, b] = pal.colors;
   const dots = (color: string, r: number): React.CSSProperties => ({
@@ -37,7 +37,7 @@ const Puntos: BgFC = ({ t, pal }) => {
     backgroundSize: '44px 44px',
     backgroundPosition: '22px 22px',
   });
-  // El foco dibuja un ocho lento por el cuadro.
+  // The spotlight traces a slow figure eight across the frame.
   const fx = width * (0.5 + 0.34 * Math.sin(t * 0.7));
   const fy = height * (0.5 + 0.3 * Math.sin(t * 1.4 + 1));
   const spot = `radial-gradient(circle 680px at ${fx}px ${fy}px, #000 0%, transparent 100%)`;
@@ -50,8 +50,8 @@ const Puntos: BgFC = ({ t, pal }) => {
   );
 };
 
-/** Degradado cónico enorme que gira despacio, difuminado y con viñeta. */
-const Gradiente: BgFC = ({ t, pal }) => {
+/** Huge conic gradient that spins slowly, blurred and vignetted. */
+const Gradient: BgFC = ({ t, pal }) => {
   const [a, b, c] = pal.colors;
   return (
     <>
@@ -69,11 +69,11 @@ const Gradiente: BgFC = ({ t, pal }) => {
   );
 };
 
-/** Piso de rejilla en perspectiva que avanza hacia el horizonte, con un sol de luz detrás. */
-const Rejilla: BgFC = ({ t, pal }) => {
+/** Perspective grid floor moving toward the horizon, with a glowing sun behind it. */
+const Grid: BgFC = ({ t, pal }) => {
   const [a, b, c] = pal.colors;
   const cell = 120;
-  // En la rejilla, arriba es lo lejano: se desvanece hacia el horizonte.
+  // On the grid, the top is far away: it fades toward the horizon.
   const fade = 'linear-gradient(to bottom, transparent 0%, #000 55%)';
   return (
     <>
@@ -113,11 +113,11 @@ const Rejilla: BgFC = ({ t, pal }) => {
   );
 };
 
-/** Grano de película que cambia 24 veces por segundo, con viñeta y un brillo de color. */
-const Grano: BgFC = ({ t, pal }) => {
+/** Film grain that changes 24 times per second, with a vignette and a color glow. */
+const Grain: BgFC = ({ t, pal }) => {
   const [a, b] = pal.colors;
   const seed = grainSeed(t);
-  const id = `grano-${seed}`;
+  const id = `grain-${seed}`;
   return (
     <>
       <AbsoluteFill
@@ -139,19 +139,19 @@ const CODE = [
   'const hook = await claude.run({ prompt })',
   'export default function App() {',
   '  return <Video fps={60} hook="zoom" />',
-  'git commit -m "construyo en público"',
+  'git commit -m "build in public"',
   'for (const idea of ideas) ship(idea)',
   'npx remotion render --codec prores',
   'if (views > 1_000_000) celebrate()',
   'const [frame] = useCurrentFrame()',
   'await deploy({ prod: true })',
   'pnpm dev  # localhost:3210',
-  'type Hook = "glitch" | "zoom" | "tachón"',
+  'type Hook = "glitch" | "zoom" | "strike"',
   'while (!done) { iterate() }',
 ];
 
-/** Líneas de código tenues que suben en diagonal; algunas palabras en color. */
-const Codigo: BgFC = ({ t, pal }) => {
+/** Faint code lines drifting up diagonally; some words in color. */
+const Code: BgFC = ({ t, pal }) => {
   const line = 64;
   const rows = 44;
   const shift = (t * 40) % (line * CODE.length);
@@ -192,15 +192,15 @@ const Codigo: BgFC = ({ t, pal }) => {
 
 const STYLES: Record<BgProps['bg'], BgFC | null> = {
   aurora: Aurora,
-  puntos: Puntos,
-  gradiente: Gradiente,
-  rejilla: Rejilla,
-  grano: Grano,
-  codigo: Codigo,
-  solido: null,
+  dots: Dots,
+  gradient: Gradient,
+  grid: Grid,
+  grain: Grain,
+  code: Code,
+  solid: null,
 };
 
-/** El fondo elegido, con los colores elegidos. Lo pone la envoltura común de todos los efectos. */
+/** The chosen background, in the chosen colors. Rendered by the shared wrapper of every effect. */
 export const Background: React.FC<{ t: number } & Partial<BgProps>> = ({ t, ...p }) => {
   const pal = bgPalette(p);
   const Style = STYLES[p.bg ?? 'aurora'] ?? null;

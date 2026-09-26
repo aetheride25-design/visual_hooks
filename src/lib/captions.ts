@@ -1,18 +1,18 @@
-// Subtítulos palabra por palabra: lógica pura (sin React ni DOM), probada con node --test.
+// Word-by-word captions: pure logic (no React or DOM), tested with node --test.
 
-/** Una palabra dicha, con su tiempo en milisegundos desde el inicio del video. */
+/** A spoken word, with its time in milliseconds from the start of the video. */
 export type CaptionWord = { text: string; startMs: number; endMs: number };
 
 /**
- * Lo que devuelve Whisper (vía `toCaptions` de Remotion): un token por elemento, con espacio delante si empieza palabra.
- * `timestampMs` es el instante en que de verdad suena (DTW): más exacto que `startMs`, que solo pega con el token anterior.
+ * What Whisper returns (via Remotion's `toCaptions`): one token per item, with a leading space if it starts a word.
+ * `timestampMs` is when it is actually heard (DTW): more accurate than `startMs`, which just follows the previous token.
  */
 export type RawToken = { text: string; startMs: number; endMs: number; timestampMs?: number | null };
 
 /**
- * Junta los tokens de Whisper en palabras.
- * Whisper a veces parte una palabra en trozos ("Clau" + "de"): el trozo que no empieza con espacio se pega al anterior.
- * Descarta marcas como "[Música]" o "(risas)".
+ * Joins Whisper tokens into words.
+ * Whisper sometimes splits a word into pieces ("Clau" + "de"): a piece that doesn't start with a space joins the previous one.
+ * Drops tags like "[Music]" or "(laughs)".
  */
 export const wordsFromTokens = (tokens: RawToken[]): CaptionWord[] => {
   const words: CaptionWord[] = [];
@@ -34,14 +34,14 @@ export const wordsFromTokens = (tokens: RawToken[]): CaptionWord[] => {
 
 export type CaptionPage = { words: CaptionWord[]; startMs: number; endMs: number };
 
-/** Cierra frase: después de estos signos conviene cambiar de página. */
+/** Ends a phrase: after these marks it's best to start a new page. */
 const endsPhrase = (text: string) => /[.!?…,;:]$/.test(text);
 
 /**
- * Agrupa las palabras en "páginas" (lo que se ve a la vez en pantalla):
- * - como mucho `maxWords` palabras,
- * - se corta en los signos de puntuación y en los silencios de más de `silenceMs`.
- * Cada página dura hasta que empieza la siguiente (o hasta `lingerMs` después de su última palabra si viene un silencio).
+ * Groups words into "pages" (what is on screen at once):
+ * - at most `maxWords` words,
+ * - split at punctuation and at silences longer than `silenceMs`.
+ * Each page lasts until the next one starts (or `lingerMs` after its last word if a silence follows).
  */
 export const paginate = (words: CaptionWord[], maxWords: number, silenceMs = 600, lingerMs = 400): CaptionPage[] => {
   const pages: CaptionPage[] = [];
@@ -55,7 +55,7 @@ export const paginate = (words: CaptionWord[], maxWords: number, silenceMs = 600
     const next = words[i + 1];
     if (!next || current.length >= Math.max(1, maxWords) || endsPhrase(w.text) || next.startMs - w.endMs > silenceMs) flush();
   });
-  // Cada página se queda en pantalla hasta la siguiente, salvo que haya un silencio largo.
+  // Each page stays on screen until the next one, unless there's a long silence.
   return pages.map((p, i) => {
     const next = pages[i + 1];
     const end = p.endMs + lingerMs;
@@ -63,11 +63,11 @@ export const paginate = (words: CaptionWord[], maxWords: number, silenceMs = 600
   });
 };
 
-/** Página visible en `ms` (o null si en ese momento no se habla). */
+/** Page visible at `ms` (or null if nobody is speaking then). */
 export const pageAt = (pages: CaptionPage[], ms: number): CaptionPage | null =>
   pages.find((p) => ms >= p.startMs && ms < p.endMs) ?? null;
 
-/** Índice de la palabra que se está diciendo en `ms` dentro de la página (la última ya dicha si hay una pausa). */
+/** Index of the word being spoken at `ms` within the page (the last one spoken during a pause). */
 export const activeWordIndex = (page: CaptionPage, ms: number): number => {
   let idx = -1;
   page.words.forEach((w, i) => {
@@ -77,8 +77,8 @@ export const activeWordIndex = (page: CaptionPage, ms: number): number => {
 };
 
 /**
- * Cambia el texto de las palabras sin tocar sus tiempos.
- * Si la palabra queda vacía se borra; si escribes dos ("Claude Code"), se reparten su tiempo.
+ * Changes a word's text without touching its timing.
+ * An emptied word is removed; if you type two ("Claude Code"), they split its time.
  */
 export const editWord = (words: CaptionWord[], index: number, text: string): CaptionWord[] => {
   const parts = text.trim().split(/\s+/).filter(Boolean);
@@ -93,14 +93,14 @@ export const editWord = (words: CaptionWord[], index: number, text: string): Cap
   return [...words.slice(0, index), ...replaced, ...words.slice(index + 1)];
 };
 
-/** Texto como se muestra: sin la coma o el punto final y en mayúsculas si el estilo lo pide. */
+/** Text as displayed: without the trailing comma or period, and uppercase if the style asks for it. */
 export const displayText = (text: string, upper: boolean, stripPunct: boolean): string => {
   let t = stripPunct ? text.replace(/[.,;:…]+$/u, '') : text;
   if (upper) t = t.toLocaleUpperCase('es');
   return t;
 };
 
-/** Tiempo de SRT (00:01:05,300) o de VTT (00:01:05.300). */
+/** SRT (00:01:05,300) or VTT (00:01:05.300) timestamp. */
 const cueTime = (ms: number, sep: ',' | '.'): string => {
   const t = Math.max(0, Math.round(ms));
   const pad = (n: number, len = 2) => String(n).padStart(len, '0');
@@ -108,8 +108,8 @@ const cueTime = (ms: number, sep: ',' | '.'): string => {
 };
 
 /**
- * Líneas de subtítulo para editores y YouTube: frases de hasta `maxWords` palabras,
- * cortadas en la puntuación y en los silencios. `offsetMs` corre todo (igual que "Adelantar / atrasar").
+ * Caption lines for editors and YouTube: phrases of up to `maxWords` words,
+ * split at punctuation and silences. `offsetMs` shifts everything (like the sync offset control).
  */
 const cues = (words: CaptionWord[], maxWords: number, offsetMs: number) =>
   paginate(words, maxWords).map((p) => ({
@@ -118,20 +118,20 @@ const cues = (words: CaptionWord[], maxWords: number, offsetMs: number) =>
     text: p.words.map((w) => w.text).join(' '),
   }));
 
-/** Archivo .srt (CapCut, DaVinci, Premiere). */
+/** .srt file (CapCut, DaVinci, Premiere). */
 export const toSrt = (words: CaptionWord[], maxWords = 7, offsetMs = 0): string =>
   cues(words, maxWords, offsetMs)
     .map((c, i) => `${i + 1}\n${cueTime(c.start, ',')} --> ${cueTime(c.end, ',')}\n${c.text}\n`)
     .join('\n');
 
-/** Archivo .vtt (YouTube, web). */
+/** .vtt file (YouTube, web). */
 export const toVtt = (words: CaptionWord[], maxWords = 7, offsetMs = 0): string =>
   'WEBVTT\n\n' +
   cues(words, maxWords, offsetMs)
     .map((c) => `${cueTime(c.start, '.')} --> ${cueTime(c.end, '.')}\n${c.text}\n`)
     .join('\n');
 
-/** Minutos y segundos para mostrar en el editor: 1:05.3 */
+/** Minutes and seconds shown in the editor: 1:05.3 */
 export const formatMs = (ms: number): string => {
   const s = Math.max(0, ms) / 1000;
   const m = Math.floor(s / 60);

@@ -1,19 +1,19 @@
 import React from 'react';
-import { aurora, fonts } from '../brand.ts';
+import { aurora, fonts } from '../theme.ts';
 import { easeOutBack, easeOutCubic, lerp, progress } from '../lib/anim.ts';
 import { parseLines } from '../lib/text.ts';
 
 export type WordEntrance = 'slam' | 'rise' | 'blur';
 
 /**
- * Texto grande que entra palabra por palabra. Las palabras entre *asteriscos*
- * salen en serif itálica y color de acento (como hace Baena).
+ * Big text that comes in word by word. Words between *asterisks*
+ * render in italic serif with the accent color.
  */
 export const KineticText: React.FC<{
   text: string;
   t: number;
   start: number;
-  /** Segundos entre palabra y palabra. */
+  /** Seconds between one word and the next. */
   stagger: number;
   size: number;
   accent: string;
@@ -66,5 +66,5 @@ export const KineticText: React.FC<{
   );
 };
 
-/** Cuántas palabras tiene un texto con énfasis (para calcular cuándo termina de entrar). */
+/** Word count of a text with emphasis (to work out when it finishes coming in). */
 export const wordCount = (text: string) => parseLines(text).flat().length;

@@ -1,10 +1,9 @@
 import React from 'react';
-import { Composition, Still } from 'remotion';
-import { PerfilA, PerfilB, PerfilC, PortadaX } from '../marca/marca.tsx';
+import { Composition } from 'remotion';
 import { baseDefaults, canvasOf, durationInFrames, effects, shells } from '../registry.tsx';
 import type { BaseProps } from '../lib/types.ts';
 
-// Una composición por efecto. El render recibe los mismos props que ve la vista previa.
+// One composition per effect. The render receives the same props the preview shows.
 export const Root: React.FC = () => (
   <>
     {effects.map((def) => {
@@ -25,16 +24,5 @@ export const Root: React.FC = () => (
         />
       );
     })}
-    {/* Imágenes fijas de marca (se exportan con `pnpm marca`) */}
-    <Still id="marca-perfil-a" component={PerfilA} width={400} height={400} />
-    <Still id="marca-perfil-b" component={PerfilB} width={400} height={400} />
-    <Still id="marca-perfil-c" component={PerfilC} width={400} height={400} />
-    <Still
-      id="marca-portada-x"
-      component={PortadaX}
-      width={1500}
-      height={500}
-      defaultProps={{ phrase: 'Construyo proyectos con IA hasta poder', accent: 'renunciar', name: 'chitodev' }}
-    />
   </>
 );

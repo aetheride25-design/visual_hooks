@@ -9,7 +9,7 @@ export type Job = {
   id: string;
   effectId: string;
   format: ExportFormat;
-  status: 'preparando' | 'renderizando' | 'listo' | 'error' | 'cancelado';
+  status: 'preparing' | 'rendering' | 'done' | 'error' | 'cancelled';
   progress: number;
   output: string | null;
   error: string | null;
@@ -21,7 +21,7 @@ const SRC = path.join(ROOT, 'src');
 const ENTRY = path.join(SRC, 'remotion', 'index.ts');
 export const EXPORT_DIR = path.join(ROOT, 'exports');
 
-// El bundle se reutiliza mientras no cambie el código de la biblioteca.
+// The bundle is reused as long as the library code doesn't change.
 let cached: { stamp: number; url: Promise<string> } | null = null;
 const newestMtime = (dir: string): number =>
   fs.readdirSync(dir, { withFileTypes: true }).reduce((max, e) => {
@@ -33,7 +33,7 @@ const getBundle = (): Promise<string> => {
   const stamp = newestMtime(SRC);
   if (!cached || cached.stamp !== stamp) {
     const url = bundle({ entryPoint: ENTRY });
-    // Si falla, se olvida solo este bundle (no uno más nuevo que ya lo reemplazó).
+    // On failure, forget only this bundle (not a newer one that already replaced it).
     url.catch(() => {
       if (cached?.url === url) cached = null;
     });
@@ -46,7 +46,7 @@ const jobs = new Map<string, Job>();
 let counter = 0;
 export const getJob = (id: string) => jobs.get(id);
 
-/** Fecha y hora local (la de tu PC) para nombrar el archivo: 20260923-214501. */
+/** Local date and time (your PC's) to name the file: 20260923-214501. */
 const stamp = () => {
   const d = new Date();
   const two = (n: number) => String(n).padStart(2, '0');
@@ -54,16 +54,16 @@ const stamp = () => {
 };
 
 export const startExport = (effectId: string, props: Record<string, unknown>, format: ExportFormat): Job => {
-  // El contador evita que dos exports en el mismo segundo se pisen.
+  // The counter keeps two exports in the same second from overwriting each other.
   const id = `${effectId}-${stamp()}-${++counter}-${format}`;
   const { cancelSignal, cancel } = makeCancelSignal();
-  const job: Job = { id, effectId, format, status: 'preparando', progress: 0, output: null, error: null, cancel };
+  const job: Job = { id, effectId, format, status: 'preparing', progress: 0, output: null, error: null, cancel };
   jobs.set(id, job);
 
-  // MP4 siempre con fondo de marca (H.264 no guarda transparencia).
-  // ProRes y PNG son para montar encima en DaVinci: siempre sin fondo.
+  // MP4 always has the background (H.264 can't store transparency).
+  // ProRes and PNG are for layering in an editor: always without background.
   const inputProps = { ...props, transparent: format !== 'mp4' };
-  const cancelled = () => job.status === 'cancelado';
+  const cancelled = () => job.status === 'cancelled';
 
   (async () => {
     fs.mkdirSync(EXPORT_DIR, { recursive: true });
@@ -71,7 +71,7 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
     if (cancelled()) return;
     const composition = await selectComposition({ serveUrl, id: effectId, inputProps });
     if (cancelled()) return;
-    job.status = 'renderizando';
+    job.status = 'rendering';
 
     if (format === 'png') {
       const outputDir = path.join(EXPORT_DIR, id);
@@ -102,9 +102,9 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
       job.output = outputLocation;
     }
     job.progress = 1;
-    job.status = 'listo';
+    job.status = 'done';
   })().catch((err: Error) => {
-    job.status = job.status === 'cancelado' ? 'cancelado' : 'error';
+    job.status = job.status === 'cancelled' ? 'cancelled' : 'error';
     job.error = err.message;
     console.error(`[export ${id}]`, err);
   });
@@ -114,8 +114,8 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
 
 export const cancelJob = (id: string): boolean => {
   const job = jobs.get(id);
-  if (!job || (job.status !== 'preparando' && job.status !== 'renderizando')) return false;
-  job.status = 'cancelado';
+  if (!job || (job.status !== 'preparing' && job.status !== 'rendering')) return false;
+  job.status = 'cancelled';
   job.cancel();
   return true;
 };

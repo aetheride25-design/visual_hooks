@@ -11,3 +11,9 @@ out/
 .env.*
 assets/**/*.mp4
 assets/**/*.mov
+
+# Personal files that stay on the author's disk but out of the public repo
+private/
+assets/marca/
+assets/video 1/
+docs/investigacion.md

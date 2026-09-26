@@ -1,5 +1,5 @@
-// Trazos "dibujados a mano": puntos con un temblor determinista y su largo,
-// para animarlos con stroke-dasharray / stroke-dashoffset.
+// "Hand-drawn" strokes: points with a deterministic wobble and their length,
+// to animate them with stroke-dasharray / stroke-dashoffset.
 
 export type Pt = { x: number; y: number };
 
@@ -12,7 +12,7 @@ export const polylineLength = (pts: Pt[]): number => {
 export const toPath = (pts: Pt[]): string =>
   pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
 
-/** Óvalo a mano: da ~1.1 vueltas y no cierra perfecto, como un plumón. */
+/** Hand-drawn oval: goes ~1.1 turns and doesn't close perfectly, like a marker. */
 export const handEllipse = (c: Pt, rx: number, ry: number, seed = 1, steps = 90): Pt[] => {
   const pts: Pt[] = [];
   const start = -Math.PI * 0.62;
@@ -20,13 +20,13 @@ export const handEllipse = (c: Pt, rx: number, ry: number, seed = 1, steps = 90)
   for (let i = 0; i <= steps; i++) {
     const a = start + (turns * i) / steps;
     const k = i / steps;
-    const wobble = 1 + 0.035 * Math.sin(3 * a + seed) + 0.06 * k; // se abre un poco al final
+    const wobble = 1 + 0.035 * Math.sin(3 * a + seed) + 0.06 * k; // opens up a bit at the end
     pts.push({ x: c.x + Math.cos(a) * rx * wobble, y: c.y + Math.sin(a) * ry * wobble });
   }
   return pts;
 };
 
-/** Flecha curva de `from` a `to` (curva cuadrática que se arquea hacia un costado). */
+/** Curved arrow from `from` to `to` (a quadratic curve that bends to one side). */
 export const handArrow = (from: Pt, to: Pt, bend = 0.25, steps = 50): { shaft: Pt[]; head: Pt[][] } => {
   const mx = (from.x + to.x) / 2;
   const my = (from.y + to.y) / 2;

@@ -1,8 +1,8 @@
 import React from 'react';
-import { fonts } from '../brand.ts';
+import { fonts } from '../theme.ts';
 import { easeOutBack, lerp } from '../lib/anim.ts';
 
-/** Rótulo grande tipo sello ("ANTES", "AHORA") que entra con golpe. `p` va de 0 a 1. */
+/** Big stamp-like label ("BEFORE", "NOW") that slams in. `p` goes from 0 to 1. */
 export const StampLabel: React.FC<{ text: string; color: string; p: number; rotate?: number; style?: React.CSSProperties }> = ({
   text,
   color,
