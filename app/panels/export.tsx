@@ -1,7 +1,9 @@
 // Export: format, progress and the output path.
 import React, { useEffect, useState } from 'react';
-import { cancelExport, getExport, openExports, startExport, type ExportFormat, type JobState } from '../api.ts';
+import { cancelExport, getExport, openExports, startExport, type ExportFormat, type ExportScale, type JobState } from '../api.ts';
 import { useLang, type StringKey } from '../i18n.tsx';
+import { exportScaleFor } from '../../src/lib/layout.ts';
+import type { MediaRef } from '../../src/lib/types.ts';
 
 const FORMATS: { value: ExportFormat; label: StringKey; hint: StringKey; timedHint: StringKey }[] = [
   { value: 'mp4', label: 'mp4Label', hint: 'mp4Hint', timedHint: 'mp4Timed' },
@@ -19,6 +21,12 @@ export const ExportPanel: React.FC<{
 }> = ({ effectId, effectName, props, size, timed }) => {
   const { t } = useLang();
   const [format, setFormat] = useState<ExportFormat>('mp4');
+  // The frame is 1080×1920: a 4K video only keeps its detail when exporting at ×2 (2160×3840).
+  const media = props.media as MediaRef | null;
+  const source = media && media.kind !== 'audio' ? media : null;
+  const suggested = source ? exportScaleFor(source.width, source.height, { w: size.width, h: size.height }) : 1;
+  const [scale, setScale] = useState<ExportScale>(suggested);
+  useEffect(() => setScale(suggested), [source?.src, suggested]);
   // Each export remembers its effect: after switching effects the last result stays visible, but labeled.
   const [job, setJob] = useState<(JobState & { effectName: string }) | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +41,7 @@ export const ExportPanel: React.FC<{
   const run = async () => {
     setError(null);
     try {
-      const { id } = await startExport(effectId, props, format);
+      const { id } = await startExport(effectId, props, format, scale);
       setJob({ id, status: 'preparing', progress: 0, output: null, error: null, effectName });
     } catch (e) {
       setError((e as Error).message);
@@ -42,7 +50,18 @@ export const ExportPanel: React.FC<{
 
   return (
     <section className="panel export">
-      <h2>{t('exportTitle', { w: size.width, h: size.height })}</h2>
+      <h2>{t('exportTitle', { w: size.width * scale, h: size.height * scale })}</h2>
+      <div className="formats scales">
+        {([1, 2] as const).map((s) => (
+          <button key={s} className={scale === s ? 'on' : ''} onClick={() => setScale(s)}>
+            <strong>
+              {t(s === 1 ? 'scaleX1' : 'scaleX2')} · {size.width * s}×{size.height * s}
+            </strong>
+            <span>{t(s === 1 ? 'scaleX1Hint' : 'scaleX2Hint')}</span>
+          </button>
+        ))}
+        {source && suggested === 2 && <p className="hint">{t('scaleSuggested', { w: source.width, h: source.height })}</p>}
+      </div>
       <div className="formats">
         {FORMATS.map((f) => (
           <button key={f.value} className={format === f.value ? 'on' : ''} onClick={() => setFormat(f.value)}>

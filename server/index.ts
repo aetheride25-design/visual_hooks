@@ -138,7 +138,7 @@ const api = async (req: http.IncomingMessage, res: http.ServerResponse): Promise
     const body = await readJson(req);
     const format = body.format as ExportFormat;
     if (!['mp4', 'prores', 'png'].includes(format)) return fail(400, 'Invalid format', 'Formato inválido');
-    const job = startExport(String(body.effectId), body.props ?? {}, format);
+    const job = startExport(String(body.effectId), body.props ?? {}, format, body.scale === 2 ? 2 : 1);
     return json(res, 200, { id: job.id }), true;
   }
   const jobMatch = /^\/api\/export\/([\w.-]+)(\/cancel)?$/.exec(p);

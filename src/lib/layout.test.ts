@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cameraTransform, fitRect, pointIn, pointToMedia } from './layout.ts';
+import { cameraTransform, exportScaleFor, fitRect, pointIn, pointToMedia } from './layout.ts';
 
 const FRAME = { x: 0, y: 0, w: 1080, h: 1920 };
 
@@ -45,4 +45,13 @@ test('cameraTransform: full centering brings the focus to the frame center', () 
   const focus = { x: 800, y: 700 };
   const out = apply(cameraTransform(focus, 2.5, 1, FRAME), focus);
   assert.ok(Math.abs(out.x - 540) < 1e-6 && Math.abs(out.y - 960) < 1e-6);
+});
+
+test('exportScaleFor suggests ×2 only when the footage has twice the pixels the frame shows', () => {
+  assert.equal(exportScaleFor(3840, 2160, FRAME), 2);
+  assert.equal(exportScaleFor(2560, 1440, FRAME), 2);
+  assert.equal(exportScaleFor(2160, 3840, FRAME), 2);
+  assert.equal(exportScaleFor(1920, 1080, FRAME), 1);
+  assert.equal(exportScaleFor(1080, 1920, FRAME), 1);
+  assert.equal(exportScaleFor(0, 0, FRAME), 1);
 });
