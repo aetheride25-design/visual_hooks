@@ -1,6 +1,7 @@
 import React from 'react';
 import { Composition } from 'remotion';
-import { baseDefaults, canvasOf, durationInFrames, effects, shells } from '../registry.tsx';
+import { baseDefaults, canvasOf, durationInFrames, effects } from '../registry.ts';
+import { shells } from '../shell.tsx';
 import type { BaseProps } from '../lib/types.ts';
 
 // One composition per effect. The render receives the same props the preview shows.

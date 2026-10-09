@@ -10,8 +10,10 @@
   },
   "scripts": {
     "dev": "node server/index.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test \"src/**/*.test.ts\" \"server/**/*.test.ts\""
+    "mods": "node scripts/mods.ts",
+    "new-mod": "node scripts/mods.ts new",
+    "typecheck": "node scripts/mods.ts && tsc --noEmit",
+    "test": "node scripts/mods.ts && node --test \"src/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\""
   },
   "dependencies": {
     "@remotion/bundler": "4.0.527",

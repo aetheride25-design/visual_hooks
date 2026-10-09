@@ -1,7 +1,9 @@
 // Renders the README GIFs with the app's own export pipeline.
 // Usage: start the app (`pnpm dev`), drop a sample clip into it, then:
-//   node scripts/readme-media.ts sample-code-screen.mp4
-// Writes docs/media/<hook>.gif and docs/media/hero.gif (needs FFmpeg on your PATH).
+//   node scripts/readme-media.ts sample-code-screen.mp4 [sample-video.mp4]
+// The optional second file is used by the effects that go over a video of you (freeze frame, comment reply…).
+// Writes docs/media/<effect>.gif, and docs/media/hero.gif on Windows (its labels use a Windows font).
+// Needs FFmpeg on your PATH.
 import fs from 'node:fs';
 import path from 'node:path';
 import { runFfmpeg } from '../server/ffmpeg.ts';
@@ -21,9 +23,17 @@ const HOOKS = [
   'red-strike',
   'prompt-typing',
   'stopwatch',
+  'freeze-frame',
+  'spotlight',
+  'cursor-click',
+  'comment-reply',
+  'top-list',
+  'poll',
 ];
+/** These look best over a video (they freeze it or sit on top of it). */
+const OVER_VIDEO = new Set(['freeze-frame', 'comment-reply', 'top-list', 'poll']);
 
-const sampleName = process.argv[2];
+const [sampleName, videoName] = process.argv.slice(2);
 if (!sampleName) throw new Error('Pass the name of a video already in media/, e.g. sample-code-screen.mp4');
 
 const call = async <T>(url: string, init?: RequestInit): Promise<T> => {
@@ -59,15 +69,23 @@ const toGif = (input: string, output: string, width: number, fps = 15, extraFilt
     output,
   ]);
 
-const media = (await call<{ name: string }[]>('/api/media')).find((m) => m.name === sampleName);
+const all = await call<{ name: string }[]>('/api/media');
+const media = all.find((m) => m.name === sampleName);
 if (!media) throw new Error(`${sampleName} isn't in media/`);
+const video = videoName ? all.find((m) => m.name === videoName) : media;
+if (!video) throw new Error(`${videoName} isn't in media/`);
 fs.mkdirSync(OUT, { recursive: true });
 
 // One GIF per hook: "effect only", over the sample clip.
 for (const id of HOOKS) {
-  const mp4 = await exportMp4(id, { media, fps: 30 });
+  const mp4 = await exportMp4(id, { media: OVER_VIDEO.has(id) ? video : media, fps: 30 });
   await toGif(mp4, path.join(OUT, `${id}.gif`), 270);
   console.log(`✓ docs/media/${id}.gif`);
+}
+
+if (process.platform !== 'win32') {
+  console.log('Skipping hero.gif (its labels use a Windows font).');
+  process.exit(0);
 }
 
 // Hero: the same clip without a hook and with one, side by side.

@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { bundle } from '@remotion/bundler';
 import { makeCancelSignal, renderFrames, renderMedia, selectComposition } from '@remotion/renderer';
+import { MODS_DIR } from './mods.ts';
+import { probeSource, runFastExport, sourceFile } from './fast-export.ts';
+import { planFast, type SmartProps } from './smart.ts';
 
 export type ExportFormat = 'mp4' | 'prores' | 'png';
 /** ×2 renders 2160×3840 instead of 1080×1920: for 4K footage, so it keeps its detail. */
@@ -22,6 +25,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const ENTRY = path.join(SRC, 'remotion', 'index.ts');
 export const EXPORT_DIR = path.join(ROOT, 'exports');
+const MEDIA_DIR = path.join(ROOT, 'media');
 
 // The bundle is reused as long as the library code doesn't change.
 let cached: { stamp: number; url: Promise<string> } | null = null;
@@ -32,7 +36,8 @@ const newestMtime = (dir: string): number =>
   }, 0);
 
 const getBundle = (): Promise<string> => {
-  const stamp = newestMtime(SRC);
+  // Mods live outside src/: a new or edited mod also needs a fresh bundle.
+  const stamp = Math.max(newestMtime(SRC), fs.existsSync(MODS_DIR) ? newestMtime(MODS_DIR) : 0);
   if (!cached || cached.stamp !== stamp) {
     const url = bundle({ entryPoint: ENTRY });
     // On failure, forget only this bundle (not a newer one that already replaced it).
@@ -75,6 +80,43 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
     if (cancelled()) return;
     job.status = 'rendering';
 
+    /**
+     * A long video with a short effect: Remotion draws only the span and FFmpeg joins your video around it.
+     * Returns false (nothing done) when the export can't go that way, e.g. an animated background shows around your video.
+     */
+    const tryFast = async (): Promise<boolean> => {
+      // FAST_EXPORT=0 pnpm dev turns it off (to compare against the full render).
+      if (process.env.FAST_EXPORT === '0') return false;
+      const media = (inputProps as { media?: { src?: unknown } }).media;
+      const source = sourceFile(media?.src, MEDIA_DIR);
+      const info = source ? await probeSource(source).catch(() => null) : null;
+      const plan = planFast({
+        format,
+        props: inputProps as SmartProps,
+        total: composition.durationInFrames,
+        width: composition.width * scale,
+        height: composition.height * scale,
+        source: info,
+      });
+      if (!plan.fast || !source || !info) return false;
+      const outputLocation = path.join(EXPORT_DIR, `${id}.mp4`);
+      const r = await runFastExport({
+        serveUrl,
+        composition,
+        inputProps,
+        scale,
+        cancelSignal,
+        source,
+        info,
+        plan,
+        output: outputLocation,
+        onProgress: (p) => (job.progress = p),
+      });
+      console.log(`[export ${id}] fast (${r.route}): frames ${r.span.from}-${r.span.to} of ${plan.total}, render ${r.ms.render} ms, join ${r.ms.join} ms`);
+      job.output = outputLocation;
+      return true;
+    };
+
     if (format === 'png') {
       const outputDir = path.join(EXPORT_DIR, id);
       await renderFrames({
@@ -89,6 +131,8 @@ export const startExport = (effectId: string, props: Record<string, unknown>, fo
         onFrameUpdate: (done) => (job.progress = done / composition.durationInFrames),
       });
       job.output = outputDir;
+    } else if (format === 'mp4' && (await tryFast())) {
+      // Done the fast way: only the effect's span went through Remotion.
     } else {
       const outputLocation = path.join(EXPORT_DIR, `${id}.${format === 'mp4' ? 'mp4' : 'mov'}`);
       await renderMedia({

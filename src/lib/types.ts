@@ -75,6 +75,12 @@ export type EffectDef<P extends Record<string, unknown> = Record<string, unknown
   localized?: Partial<Record<Lang, Partial<P>>>;
   params: ParamDef[];
   component: React.FC<P & BaseProps>;
+  /** Second shown on its card in the effect gallery (default: 70 % of its duration, when it's fully in). */
+  thumbSec?: number;
+  /** Who made it. Mods show it on their card. */
+  author?: string;
+  /** Set by the registry: 'mod' if it was loaded from the mods/ folder. */
+  source?: 'core' | 'mod';
   /** Canvas size when it isn't the vertical 1080×1920 (may depend on the props). */
   canvas?: (props: P) => { width: number; height: number };
 };

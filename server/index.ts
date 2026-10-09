@@ -9,6 +9,7 @@ import { tr, type Lang } from '../src/lib/i18n.ts';
 import { browserPlan, isTrustedRequest, mediaKind, probeMedia, safeName, serveFile, transcodeArgs } from './files.ts';
 import { cancelJob, EXPORT_DIR, getJob, startExport, type ExportFormat } from './render.ts';
 import { runFfmpeg } from './ffmpeg.ts';
+import { watchMods, writeModsIndex } from './mods.ts';
 import { getTranscribeJob, startTranscription, WHISPER_MODELS, type TranscribeLang, type WhisperModel } from './transcribe.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -97,6 +98,10 @@ const openFolder = (dir: string) => {
   const cmd = process.platform === 'win32' ? 'explorer.exe' : process.platform === 'darwin' ? 'open' : 'xdg-open';
   spawn(cmd, [dir], { detached: true, stdio: 'ignore' }).on('error', () => undefined).unref();
 };
+
+// Mods: list the ones in mods/ before the app loads, and pick up new ones while it runs.
+writeModsIndex();
+watchMods(() => console.log('  Mods changed: the app reloads with them.'));
 
 const vite = await createVite({
   configFile: path.join(ROOT, 'vite.config.ts'),

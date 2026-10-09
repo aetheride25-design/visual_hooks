@@ -7,6 +7,36 @@ const strings = {
   // Header
   brand: { en: 'Visual Hooks', es: 'Hooks visuales' },
   language: { en: 'Language', es: 'Idioma' },
+  oss: { en: 'Open source', es: 'Open source' },
+  ossHint: { en: 'Free and MIT-licensed. See the code on GitHub', es: 'Gratis y con licencia MIT. Mira el código en GitHub' },
+  kbdSearch: { en: 'search', es: 'buscar' },
+  kbdPlay: { en: 'play', es: 'reproducir' },
+  exportBtn: { en: 'Export', es: 'Exportar' },
+  close: { en: 'Close', es: 'Cerrar' },
+
+  // Getting started (until you pick a file)
+  step1: { en: 'Drop your video, image or audio on the left', es: 'Suelta tu video, imagen o audio a la izquierda' },
+  step2: { en: 'Pick a hook and tweak it on the right', es: 'Elige un hook y ajústalo a la derecha' },
+  step3: { en: 'Export: MP4, or transparent for your editor', es: 'Exporta: MP4, o transparente para tu editor' },
+  byAuthor: { en: 'by {a}', es: 'por {a}' },
+
+  // Gallery
+  effectsTitle: { en: 'Effects', es: 'Efectos' },
+  searchEffects: { en: 'Search effects…  ( / )', es: 'Buscar efectos…  ( / )' },
+  filterAll: { en: 'All', es: 'Todos' },
+  filterHooks: { en: 'Hooks', es: 'Hooks' },
+  filterSupport: { en: 'Support', es: 'Apoyo' },
+  filterPieces: { en: 'Pieces', es: 'Piezas' },
+  filterMods: { en: 'Mods', es: 'Mods' },
+  modBadge: { en: 'MOD', es: 'MOD' },
+  modProblems: { en: 'Mods that couldn’t load ({n}):', es: 'Mods que no se pudieron cargar ({n}):' },
+  groupBase: { en: 'Captions only', es: 'Solo subtítulos' },
+  notWithThis: { en: 'Not with this file', es: 'No con este archivo' },
+  noMatches: { en: 'No effect matches. Try another word.', es: 'Ningún efecto coincide. Prueba otra palabra.' },
+
+  // Inspector
+  tabEffect: { en: 'Effect', es: 'Efecto' },
+  resetEffect: { en: 'Reset this effect', es: 'Restablecer este efecto' },
 
   // Media panel
   mediaTitle: { en: 'Your video, image or audio', es: 'Tu video, imagen o audio' },
@@ -28,6 +58,7 @@ const strings = {
   },
   groupPieces: { en: 'Animated pieces', es: 'Piezas animadas' },
   groupPiecesHint: { en: 'Standalone clips: they don’t go over a video.', es: 'Clips sueltos: no van sobre un video.' },
+  groupModsHint: { en: 'Effects loaded from the mods/ folder.', es: 'Efectos cargados desde la carpeta mods/.' },
 
   // Preview
   pickHere: { en: 'Click on the key detail', es: 'Haz clic sobre el dato clave' },
@@ -125,6 +156,9 @@ const strings = {
 
   // Export
   exportTitle: { en: 'Export {w}×{h}', es: 'Exportar {w}×{h}' },
+  exportSize: { en: 'Size', es: 'Tamaño' },
+  exportFormat: { en: 'Format', es: 'Formato' },
+  exportOf: { en: '{name}, with everything you see in the preview.', es: '{name}, con todo lo que ves en la vista previa.' },
   mp4Label: { en: 'MP4', es: 'MP4' },
   mp4Hint: { en: 'With background, ready to upload', es: 'Con fondo, para subir directo' },
   mp4Timed: { en: 'Your full video with the effect and its audio', es: 'Tu video completo con el efecto y su audio' },
