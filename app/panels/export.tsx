@@ -18,7 +18,9 @@ export const ExportPanel: React.FC<{
   size: { width: number; height: number };
   /** "Apply to my video": changes what each format explains. */
   timed: boolean;
-}> = ({ effectId, effectName, props, size, timed }) => {
+  /** Tells the top bar how the export is going (to show its progress while this is closed). */
+  onJob: (job: JobState | null) => void;
+}> = ({ effectId, effectName, props, size, timed, onJob }) => {
   const { t } = useLang();
   const [format, setFormat] = useState<ExportFormat>('mp4');
   // The frame is 1080×1920: a 4K video only keeps its detail when exporting at ×2 (2160×3840).
@@ -31,6 +33,7 @@ export const ExportPanel: React.FC<{
   const [job, setJob] = useState<(JobState & { effectName: string }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const busy = job?.status === 'preparing' || job?.status === 'rendering';
+  useEffect(() => onJob(job), [job?.status, job?.progress]);
 
   useEffect(() => {
     if (!busy || !job) return;
@@ -49,8 +52,10 @@ export const ExportPanel: React.FC<{
   };
 
   return (
-    <section className="panel export">
+    <div className="export">
       <h2>{t('exportTitle', { w: size.width * scale, h: size.height * scale })}</h2>
+      <p className="desc">{t('exportOf', { name: effectName })}</p>
+      <h3>{t('exportSize')}</h3>
       <div className="formats scales">
         {([1, 2] as const).map((s) => (
           <button key={s} className={scale === s ? 'on' : ''} onClick={() => setScale(s)}>
@@ -62,6 +67,7 @@ export const ExportPanel: React.FC<{
         ))}
         {source && suggested === 2 && <p className="hint">{t('scaleSuggested', { w: source.width, h: source.height })}</p>}
       </div>
+      <h3>{t('exportFormat')}</h3>
       <div className="formats">
         {FORMATS.map((f) => (
           <button key={f.value} className={format === f.value ? 'on' : ''} onClick={() => setFormat(f.value)}>
@@ -99,6 +105,6 @@ export const ExportPanel: React.FC<{
       <button className="link" onClick={() => openExports()}>
         {t('openExports')}
       </button>
-    </section>
+    </div>
   );
 };

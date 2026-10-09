@@ -1,91 +1,17 @@
+// Shared wrapper around every effect: background, your video with its audio, the effect's span and captions.
+// The preview (Player) and the render (Composition) use it the same way.
 import React from 'react';
 import { AbsoluteFill, Sequence, useCurrentFrame } from 'remotion';
 import { Audio } from '@remotion/media';
 import { Background } from './components/backgrounds.tsx';
 import { MainVideoClock, MediaAt, mediaRect } from './components/media.tsx';
 import { CaptionsLayer } from './components/captions.tsx';
-import { bgDefaults } from './lib/background.ts';
 import { timeOf } from './lib/anim.ts';
-import type { Lang } from './lib/i18n.ts';
 import type { Fit } from './lib/layout.ts';
 import { fadeOut, onVideoOf } from './lib/timeline.ts';
 import type { BaseProps, EffectDef } from './lib/types.ts';
-import { FRAME, HEIGHT, WIDTH } from './lib/frame.ts';
-import { noEffect } from './effects/NoEffect.tsx';
-import { arrowCircle } from './effects/hooks/ArrowCircle.tsx';
-import { beforeAfterCut } from './effects/hooks/BeforeAfterCut.tsx';
-import { focusSnap } from './effects/hooks/FocusSnap.tsx';
-import { glitch } from './effects/hooks/Glitch.tsx';
-import { notification } from './effects/hooks/Notification.tsx';
-import { promptTyping } from './effects/hooks/PromptTyping.tsx';
-import { punchZoom } from './effects/hooks/PunchZoom.tsx';
-import { redStrike } from './effects/hooks/RedStrike.tsx';
-import { stopwatch } from './effects/hooks/Stopwatch.tsx';
-import { textDrop } from './effects/hooks/TextDrop.tsx';
-import { window3D } from './effects/hooks/Window3D.tsx';
-import { beforeAfterWipe } from './effects/support/BeforeAfterWipe.tsx';
-import { bigNumber } from './effects/support/BigNumber.tsx';
-import { endCard } from './effects/support/EndCard.tsx';
-import { floatingWindow } from './effects/support/FloatingWindow.tsx';
-import { mysteryCards } from './effects/support/MysteryCards.tsx';
-import { splitScreen } from './effects/support/SplitScreen.tsx';
-import { textCard } from './effects/support/TextCard.tsx';
-import { namelessIdea } from './effects/pieces/NamelessIdea.tsx';
-
-export const effects: EffectDef<any>[] = [
-  // Your video as is (to add captions only)
-  noEffect,
-  // A. Visual hooks (0–2 s)
-  focusSnap,
-  punchZoom,
-  textDrop,
-  window3D,
-  arrowCircle,
-  beforeAfterCut,
-  glitch,
-  notification,
-  redStrike,
-  promptTyping,
-  stopwatch,
-  // B. Support effects
-  floatingWindow,
-  splitScreen,
-  beforeAfterWipe,
-  bigNumber,
-  textCard,
-  endCard,
-  mysteryCards,
-  // C. Animated pieces (they don't go over a video)
-  namelessIdea,
-];
-
-export const findEffect = (id: string): EffectDef<any> | undefined => effects.find((e) => e.id === id);
-
-export { WIDTH, HEIGHT } from './lib/frame.ts';
-
-/** Canvas size of an effect with these props (vertical 1080×1920 unless the effect says otherwise). */
-export const canvasOf = (def: EffectDef<any>, props: Record<string, unknown>) =>
-  def.canvas?.(props) ?? { width: WIDTH, height: HEIGHT };
-
-export const baseDefaults = (def: EffectDef<any>): BaseProps => ({
-  media: null,
-  durationSec: def.defaultDurationSec,
-  fps: 30,
-  speed: 1,
-  transparent: false,
-  timeline: null,
-  captions: null,
-  ...bgDefaults,
-});
-
-/** The effect's own defaults, with the sample texts in `lang`. */
-export const defaultsFor = (def: EffectDef<any>, lang: Lang): Record<string, unknown> => ({
-  ...def.defaults,
-  ...def.localized?.[lang],
-});
-
-export const durationInFrames = (p: Pick<BaseProps, 'durationSec' | 'fps'>): number =>
-  Math.max(1, Math.round(p.durationSec * p.fps));
+import { FRAME } from './lib/frame.ts';
+import { effects } from './registry.ts';
 
 /**
  * The effect's span inside your video: its background (or the scrim behind cards) and the effect,

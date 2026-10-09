@@ -114,7 +114,7 @@ If you see black instead of your footage, right-click the clip → *Clip Attribu
    in `localized.es`.
 2. Animate **only** from time: `t = timeOf(useCurrentFrame(), fps, speed)`. No `Date.now()`, `Math.random()`
    or CSS animations: that's what keeps the frame-by-frame render identical to the preview.
-3. Register it in `src/registry.tsx`. It shows up in the app and in the render.
+3. Register it in `src/registry.ts`. It shows up in the app and in the render.
 4. Run `pnpm test` and `pnpm typecheck`.
 
 Want a first contribution? See [good first issues](docs/good-first-issues.md) and [CONTRIBUTING](CONTRIBUTING.md).
@@ -126,7 +126,7 @@ src/theme.ts            Aurora colors and fonts
 src/lib/                pure logic (animation, layout, text, captions, i18n) + tests
 src/components/         backgrounds, media, window, animated text, captions layer
 src/effects/            hooks/, support/, pieces/ and "No effect"
-src/registry.tsx        effect list + shared wrapper: background, your video with audio, effect span and captions
+src/registry.ts        effect list + shared wrapper: background, your video with audio, effect span and captions
 src/remotion/           render entry (one composition per effect)
 app/                    local app (React + Remotion Player)
 server/                 local server: uploads, Range serving, Whisper transcription, export with @remotion/renderer

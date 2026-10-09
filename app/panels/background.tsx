@@ -36,8 +36,7 @@ export const BackgroundPanel: React.FC<{
   };
   const tint = bgTints.find((x) => x.value === value.bgTint);
   return (
-    <section className="panel">
-      <h2>{t('background')}</h2>
+    <div>
       {transparent && <p className="desc">{t('bgHidden')}</p>}
       <div className="field">
         <span>{t('style')}</span>
@@ -73,6 +72,6 @@ export const BackgroundPanel: React.FC<{
           ))}
         </div>
       )}
-    </section>
+    </div>
   );
 };
