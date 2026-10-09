@@ -1,12 +1,30 @@
-# Hooks visuales
+<h1 align="center">Hooks visuales</h1>
 
-[English](README.md) · **Español**
+<p align="center">
+  <b>Primeros segundos que frenan el scroll en TikTok, Reels y Shorts.</b><br>
+  26 hooks y efectos animados más subtítulos automáticos, aplicados a tu propio video. Gratis y de código abierto.
+</p>
 
-<p align="center"><img src="docs/media/hero.gif" width="540" alt="El mismo clip sin hook y con hook"></p>
+<p align="center">
+  <a href="https://hooks-visuales.vercel.app"><b>🌐 Sitio web</b></a> ·
+  <a href="docs/media/visual-hooks-demo.mp4"><b>▶ Ver el demo (38 s)</b></a> ·
+  <a href="docs/mods.es.md">🧩 Crea tus propios efectos</a> ·
+  <a href="README.md">English</a>
+</p>
 
-**Primeros segundos que frenan el scroll en TikTok, Reels y Shorts.** 26 hooks y efectos animados más subtítulos
-automáticos, aplicados a tu propio video en una app local, y exportados en MP4, ProRes 4444 con transparencia o
-secuencia PNG. Gratis y de código abierto, y puedes [crear tus propios efectos como mods](docs/mods.es.md).
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-2ea44f" alt="Licencia MIT"></a>
+  <img src="https://img.shields.io/badge/node-%E2%89%A522.18-339933?logo=node.js&logoColor=white" alt="Node 22.18 o más nuevo">
+  <a href="https://www.remotion.dev"><img src="https://img.shields.io/badge/hecho%20con-Remotion-0b84f3" alt="Hecho con Remotion"></a>
+  <a href="https://x.com/chitodev"><img src="https://img.shields.io/badge/por-%40chitodev-000000?logo=x" alt="Hecho por @chitodev"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/visual-hooks-demo.mp4"><img src="docs/media/demo.gif" width="720" alt="Demo de Hooks visuales: sueltas tu video, eliges un hook, lo ajustas y exportas"></a><br>
+  <sub>Haz clic para ver el demo completo con sonido (en inglés) · <a href="site/media/demo-es.mp4">versión vertical en español (26 s)</a></sub>
+</p>
+
+## Empezar
 
 ```bash
 git clone https://github.com/aetheride25-design/visual_hooks.git && cd visual_hooks
@@ -14,9 +32,13 @@ pnpm install
 pnpm dev
 ```
 
-Luego abre http://localhost:3210.
+Luego abre http://localhost:3210, suelta tu video, elige un hook y exporta. Necesitas Node 22.18+, pnpm y FFmpeg
+([requisitos](#requisitos)).
 
-Hecho por [@chitodev](https://x.com/chitodev) · Construido con [Remotion](https://www.remotion.dev)
+Los exports salen en MP4, ProRes 4444 con transparencia o secuencia PNG, y puedes [crear tus propios efectos como mods](docs/mods.es.md).
+
+<p align="center"><img src="docs/media/hero.gif" width="540" alt="El mismo clip sin hook y con hook"><br>
+<sub>El mismo clip, sin hook y con hook</sub></p>
 
 ## Los hooks
 
