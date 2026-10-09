@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Hooks · Free scroll-stopping hooks and captions for your shorts</title>
+  <meta name="description" content="Free and open source app with animated hooks and auto-captions for TikTok, Reels and Shorts. Runs on your PC, exports MP4, ProRes 4444 with alpha and 4K.">
+  <meta name="theme-color" content="#0a0b0d">
+  <meta property="og:title" content="Visual Hooks: free scroll-stopping hooks for your shorts">
+  <meta property="og:description" content="Animated hooks and auto-captions for TikTok, Reels and Shorts. Free, open source, runs on your PC.">
+  <meta property="og:image" content="https://hooks-visuales.vercel.app/media/og.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hooks-visuales.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@chitodev">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="Visual Hooks">
+      <img src="favicon.svg" alt="" width="28" height="28">
+      <span data-i18n="brand">Visual Hooks</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#effects" data-i18n="nav.effects">Effects</a>
+      <a href="#captions" data-i18n="nav.captions">Captions</a>
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+      </div>
+      <a class="btn btn-small" href="https://x.com/chitodev" target="_blank" rel="noopener" aria-label="@chitodev on X">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span>@chitodev</span>
+      </a>
+      <a class="btn btn-small" href="https://github.com/aetheride25-design/visual_hooks" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="pill"><span class="dot"></span><span data-i18n="hero.pill">Free · Open source · MIT</span></p>
+        <h1 data-i18n-html="hero.title">The first second decides if they <em>keep watching</em>.</h1>
+        <p class="lead" data-i18n-html="hero.lead">Animated hooks and auto-captions for TikTok, Reels and Shorts. Drop your video, click a hook, export. It all runs on your PC.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/aetheride25-design/visual_hooks" target="_blank" rel="noopener" data-i18n="hero.cta">Get it free on GitHub</a>
+          <a class="btn btn-ghost" href="#effects" data-i18n="hero.secondary">See the effects</a>
+        </div>
+        <div class="install">
+          <code id="install-cmd">git clone https://github.com/aetheride25-design/visual_hooks.git &amp;&amp; cd visual_hooks &amp;&amp; pnpm install &amp;&amp; pnpm dev</code>
+          <button type="button" class="copy" data-copy="install-cmd" data-i18n="copy">Copy</button>
+        </div>
+        <ul class="facts">
+          <li><strong data-count-effects>19</strong> <span data-i18n="facts.effects">effects</span></li>
+          <li><strong>6</strong> <span data-i18n="facts.captions">caption styles</span></li>
+          <li><strong>4K</strong> <span data-i18n="facts.export">MP4 · ProRes alpha</span></li>
+          <li><strong>$0</strong> <span data-i18n="facts.price">no account, no watermark</span></li>
+        </ul>
+      </div>
+      <div class="hero-visual">
+        <div class="phone">
+          <video autoplay muted loop playsinline preload="auto" poster="media/demo-en.jpg" data-src-en="media/demo-en.mp4" data-src-es="media/demo-es.mp4" data-poster-en="media/demo-en.jpg" data-poster-es="media/demo-es.jpg" aria-label="Demo of the hooks">
+            <source src="media/demo-en.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="float-tag tag-a" data-i18n="hero.tag1">Hook in the first second</div>
+        <div class="float-tag tag-b" data-i18n="hero.tag2">Captions with Whisper, offline</div>
+      </div>
+    </section>
+
+    <!-- Effects gallery -->
+    <section id="effects" class="wrap section">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="effects.eyebrow">The effects</p>
+        <h2 data-i18n-html="effects.title">Pick one. It's applied <em>instantly</em>.</h2>
+        <p class="sub" data-i18n="effects.sub">Every clip below was exported by the app itself, over the same screen recording. Hover or tap to play.</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" class="active" data-filter="all" data-i18n="effects.all">All</button>
+        <button type="button" role="tab" data-filter="hook" data-i18n="effects.hooks">Hooks</button>
+        <button type="button" role="tab" data-filter="support" data-i18n="effects.support">Support</button>
+        <button type="button" role="tab" data-filter="piece" data-i18n="effects.pieces">Animated pieces</button>
+      </div>
+      <div class="grid" id="effect-grid"></div>
+      <p class="more" data-i18n-html="effects.more">Missing one? Effects are plain React files. <a href="https://github.com/aetheride25-design/visual_hooks#add-a-new-effect" target="_blank" rel="noopener">Add your own</a> and send a PR.</p>
+    </section>
+
+    <!-- Captions -->
+    <section id="captions" class="wrap section">
+      <div class="split">
+        <div>
+          <p class="eyebrow" data-i18n="captions.eyebrow">Auto-captions</p>
+          <h2 data-i18n-html="captions.title">Captions that move <em>with the voice</em>.</h2>
+          <p class="sub" data-i18n="captions.sub">Whisper transcribes your video on your own PC, word by word. Fix any word, pick a style, and burn them in or download SRT / VTT.</p>
+          <ul class="chips">
+            <li data-i18n="captions.s1">Bold yellow</li>
+            <li data-i18n="captions.s2">Comic</li>
+            <li data-i18n="captions.s3">Karaoke</li>
+            <li data-i18n="captions.s4">Pop</li>
+            <li data-i18n="captions.s5">Clean</li>
+            <li data-i18n="captions.s6">Editorial</li>
+          </ul>
+          <p class="note" data-i18n="captions.note">Captions are a layer: they go on top of any effect, or on your plain video.</p>
+        </div>
+        <div class="caption-phones">
+          <div class="phone small"><video muted loop playsinline autoplay preload="metadata" poster="media/captions-1.jpg"><source src="media/captions-1.mp4" type="video/mp4"></video></div>
+          <div class="phone small raised"><video muted loop playsinline autoplay preload="metadata" poster="media/captions-2.jpg"><source src="media/captions-2.mp4" type="video/mp4"></video></div>
+          <div class="phone small"><video muted loop playsinline autoplay preload="metadata" poster="media/captions-3.jpg"><source src="media/captions-3.mp4" type="video/mp4"></video></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bento -->
+    <section class="wrap section">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="bento.eyebrow">Made for creators who edit</p>
+        <h2 data-i18n-html="bento.title">It makes the pieces. <em>Your editor</em> assembles them.</h2>
+      </div>
+      <div class="bento">
+        <article class="card c-wide">
+          <h3 data-i18n="bento.apply.t">Apply it to your own video</h3>
+          <p data-i18n="bento.apply.d">The export keeps your whole video and its audio. The effect covers one span: drag it on the bar under the preview.</p>
+          <div class="timeline" aria-hidden="true"><span class="track"></span><span class="span"></span><span class="head"></span></div>
+        </article>
+        <article class="card">
+          <h3 data-i18n="bento.alpha.t">Transparent ProRes 4444</h3>
+          <p data-i18n="bento.alpha.d">Layer the effect over your footage in DaVinci Resolve, Premiere or CapCut. PNG sequence too.</p>
+          <div class="checker" aria-hidden="true"><span>α</span></div>
+        </article>
+        <article class="card">
+          <h3 data-i18n="bento.4k.t">Full HD or 4K</h3>
+          <p data-i18n="bento.4k.d">Shot in 4K? Export at 2160×3840 and keep every detail when the hook zooms in.</p>
+          <div class="big" aria-hidden="true">2160<small>×</small>3840</div>
+        </article>
+        <article class="card">
+          <h3 data-i18n="bento.local.t">Your files never leave your PC</h3>
+          <p data-i18n="bento.local.d">The server only listens on 127.0.0.1. No uploads, no account, no watermark.</p>
+          <div class="big mono" aria-hidden="true">127.0.0.1</div>
+        </article>
+        <article class="card">
+          <h3 data-i18n="bento.frame.t">Frame-perfect</h3>
+          <p data-i18n="bento.frame.d">Built with Remotion: the export is rendered frame by frame and matches the preview exactly.</p>
+          <div class="frames" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        </article>
+        <article class="card c-full">
+          <div>
+            <h3 data-i18n="bento.edit.t">Edit everything live</h3>
+            <p data-i18n-html="bento.edit.d">Texts, colors, duration, speed, background and zoom point. Words between <code>*asterisks*</code> come out in italic serif with the accent color. English and Spanish UI.</p>
+          </div>
+          <div class="swatches" aria-hidden="true"><span style="--c:#5fd6b2"></span><span style="--c:#6fb4ff"></span><span style="--c:#b495ff"></span><span style="--c:#ff4f4a"></span><span style="--c:#eceff2"></span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" class="wrap section">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="how.eyebrow">How it works</p>
+        <h2 data-i18n-html="how.title">From clip to hook in <em>three steps</em>.</h2>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span><h3 data-i18n="how.s1.t">Drop your video</h3><p data-i18n="how.s1.d">Video, image or audio. ProRes is converted for you; your original isn't touched.</p></li>
+        <li><span class="num">2</span><h3 data-i18n="how.s2.t">Click a hook</h3><p data-i18n="how.s2.d">Preview it live. Change the texts, colors and timing on the right.</p></li>
+        <li><span class="num">3</span><h3 data-i18n="how.s3.t">Export</h3><p data-i18n="how.s3.d">MP4 ready to post, or transparent ProRes / PNG for your editor, at 30 or 60 fps.</p></li>
+      </ol>
+      <div class="terminal">
+        <div class="term-bar"><span></span><span></span><span></span><em data-i18n="how.term">Needs Node 22.18+, pnpm and FFmpeg</em></div>
+        <pre><code><span class="c"># 1. get the code</span>
+git clone https://github.com/aetheride25-design/visual_hooks.git
+cd visual_hooks
+<span class="c"># 2. install and start</span>
+pnpm install
+pnpm dev
+<span class="ok">✓</span> Visual Hooks ready at <span class="link">http://localhost:3210</span></code></pre>
+      </div>
+    </section>
+
+    <!-- Open source + cloud line -->
+    <section id="open-source" class="wrap section">
+      <div class="oss">
+        <div>
+          <p class="eyebrow" data-i18n="oss.eyebrow">Open source</p>
+          <h2 data-i18n-html="oss.title">Free. All of it. <em>For real.</em></h2>
+          <p class="sub" data-i18n="oss.sub">The app, every effect and the way to build your own are MIT licensed. Nothing is locked, hidden or held back.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://github.com/aetheride25-design/visual_hooks" target="_blank" rel="noopener" data-i18n="oss.star">Star it on GitHub</a>
+            <a class="btn btn-ghost" href="https://github.com/aetheride25-design/visual_hooks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" data-i18n="oss.contrib">Contribute</a>
+          </div>
+        </div>
+        <form class="cloud" id="cloud-form" novalidate>
+          <p class="cloud-line"><span class="badge" data-i18n="cloud.badge">Soon</span> <span data-i18n="cloud.line">Cloud version coming soon. Leave your email and you'll hear first.</span></p>
+          <div class="field">
+            <label class="sr-only" for="cloud-email" data-i18n="cloud.label">Email</label>
+            <input id="cloud-email" name="email" type="email" required autocomplete="email" placeholder="you@email.com" data-i18n-placeholder="cloud.placeholder">
+            <button type="submit" class="btn btn-primary" data-i18n="cloud.button">Notify me</button>
+          </div>
+          <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="form-msg" id="cloud-msg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="wrap section narrow">
+      <div class="section-head">
+        <p class="eyebrow" data-i18n="faq.eyebrow">FAQ</p>
+        <h2 data-i18n="faq.title">Questions</h2>
+      </div>
+      <details><summary data-i18n="faq.q1">Is it really free?</summary><p data-i18n="faq.a1">Yes. The code is MIT: use it, change it and use it for client work. No account, no watermark, no limits.</p></details>
+      <details><summary data-i18n="faq.q2">Do I need to know how to code?</summary><p data-i18n="faq.a2">You need to paste three commands in a terminal to install it. After that it's a normal app in your browser.</p></details>
+      <details><summary data-i18n="faq.q3">Does it work on Mac and Linux?</summary><p data-i18n="faq.a3">It's tested on Windows 11. Mac and Linux should work; some UI fonts fall back and may look slightly different. Caption fonts ship with the project and look the same everywhere.</p></details>
+      <details><summary data-i18n="faq.q4">Can I put several effects in one video?</summary><p data-i18n="faq.a4">One effect (plus captions) per export. Export each piece and combine them in your editor: it isn't a timeline editor, on purpose.</p></details>
+      <details><summary data-i18n-html="faq.q5">What about the Remotion license?</summary><p data-i18n-html="faq.a5">Remotion is free for individuals, companies of up to 3 people and non-profits. Bigger for-profit companies need a <a href="https://www.remotion.dev/license" target="_blank" rel="noopener">Remotion Company License</a>.</p></details>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <p><span data-i18n="footer.made">Made by</span> <a href="https://x.com/chitodev" target="_blank" rel="noopener">@chitodev</a> · <span data-i18n="footer.built">Built with</span> <a href="https://www.remotion.dev" target="_blank" rel="noopener">Remotion</a></p>
+    <p><a href="https://github.com/aetheride25-design/visual_hooks" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/aetheride25-design/visual_hooks/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a></p>
+  </footer>
+
+  <script src="effects.js"></script>
+  <script src="config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
