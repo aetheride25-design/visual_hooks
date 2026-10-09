@@ -1,5 +1,5 @@
 // The effects shown on the landing. To add one: drop `media/effects/<id>.mp4` (+ `<id>.jpg` poster)
-// and add a line here. `group` is 'hook', 'support' or 'piece'. Regenerate the clips with
+// and add a line here. `group` is 'hook', 'support', 'piece' or 'mod'. Regenerate the clips with
 // `node site/scripts/render-media.ts` while the app is running (see site/README.md).
 window.EFFECTS = [
   { id: 'focus-snap', group: 'hook', en: 'Focus snap', es: 'Enfoque seco', den: 'Starts zoomed in and blurry, snaps into focus.', des: 'Entra borroso y ampliado, y encaja nítido.' },
@@ -13,6 +13,9 @@ window.EFFECTS = [
   { id: 'red-strike', group: 'hook', en: 'Red strike', es: 'Tachado rojo', den: '"3 hours" crossed out, "10 min" lands.', des: '"3 horas" tachado, cae "10 min".' },
   { id: 'prompt-typing', group: 'hook', en: 'Prompt typing', es: 'Prompt que se escribe', den: 'A prompt or command types itself.', des: 'Un prompt o comando se escribe solo.' },
   { id: 'stopwatch', group: 'hook', en: 'Stopwatch', es: 'Cronómetro', den: 'A clock races and stops on your time.', des: 'Un reloj corre y frena en tu tiempo.' },
+  { id: 'freeze-frame', group: 'hook', en: 'Freeze frame', es: 'Cuadro congelado', den: '"Yep, that\'s me." Your video freezes, goes gray and an arrow points.', des: '"Sí, ese soy yo." Tu video se congela, pierde el color y una flecha señala.' },
+  { id: 'spotlight', group: 'hook', en: 'Spotlight', es: 'Reflector', den: 'Everything goes dark except one detail, with a pulsing ring.', des: 'Todo se oscurece menos un detalle, con un anillo que late.' },
+  { id: 'cursor-click', group: 'hook', en: 'Cursor click', es: 'Clic del cursor', den: 'A cursor clicks with a ripple and the camera dives in.', des: 'Un cursor hace clic con una onda y la cámara se mete.' },
   { id: 'floating-window', group: 'support', en: 'Floating window', es: 'Ventana flotante', den: 'Your capture in a card with a label.', des: 'Tu captura en una tarjeta con etiqueta.' },
   { id: 'split-screen', group: 'support', en: 'Split screen', es: 'Pantalla dividida', den: 'Two shots, one on top of the other.', des: 'Dos tomas, una sobre otra.' },
   { id: 'before-after-wipe', group: 'support', en: 'Before / after wipe', es: 'Cortina antes / después', den: 'A light curtain reveals the "after".', des: 'Una cortina de luz revela el "después".' },
@@ -20,5 +23,9 @@ window.EFFECTS = [
   { id: 'text-card', group: 'support', en: 'Text card', es: 'Tarjeta de texto', den: 'One big phrase, nothing else.', des: 'Una frase grande, nada más.' },
   { id: 'end-card', group: 'support', en: 'End card', es: 'Tarjeta final', den: '"Next: …" plus your @handle.', des: '"Próximo: …" más tu @usuario.' },
   { id: 'mystery-cards', group: 'support', en: 'Mystery cards', es: 'Cartas misterio', den: '"?" cards that flip.', des: 'Cartas "?" que se voltean.' },
+  { id: 'comment-reply', group: 'support', en: 'Comment reply', es: 'Responder comentario', den: "A viewer's comment pops up so you answer it on camera.", des: 'El comentario de alguien aparece para responderlo a cámara.' },
+  { id: 'top-list', group: 'support', en: 'Top list', es: 'Lista top', den: 'A numbered list that fills in one by one.', des: 'Una lista numerada que se llena una por una.' },
+  { id: 'poll', group: 'support', en: 'Poll', es: 'Encuesta', den: 'Bars fill in and the winning option lights up.', des: 'Las barras se llenan y la opción ganadora se ilumina.' },
   { id: 'nameless-idea', group: 'piece', en: 'Nameless idea', es: 'Idea sin nombre', den: 'A thin-line bulb with sparks and a blinking "???".', des: 'Una bombilla de líneas finas con destellos y "???".' },
+  { id: 'sticker-slap', group: 'mod', en: 'Sticker slap', es: 'Sticker pegado', den: 'A die-cut sticker slaps on with a shake. The example mod.', des: 'Un sticker troquelado se pega de golpe. El mod de ejemplo.' },
 ];

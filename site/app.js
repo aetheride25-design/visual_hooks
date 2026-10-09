@@ -18,7 +18,7 @@
 
   // ---------- Effects gallery ----------
   const grid = document.getElementById('effect-grid');
-  const groupLabel = { hook: 'effects.hooks', support: 'effects.support', piece: 'effects.pieces' };
+  const groupLabel = { hook: 'effects.hooks', support: 'effects.support', piece: 'effects.pieces', mod: 'effects.mods' };
 
   const renderGrid = () => {
     grid.innerHTML = '';
