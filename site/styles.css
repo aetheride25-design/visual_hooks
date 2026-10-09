@@ -57,7 +57,7 @@ h1, h2, h3 { margin: 0; letter-spacing: -0.02em; line-height: 1.08; }
   background: rgba(10, 11, 13, 0.72); backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid var(--line);
 }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; white-space: nowrap; color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
 .brand:hover { text-decoration: none; }
 .nav-links { display: flex; gap: 28px; }
 .nav-links a { color: var(--muted); font-size: 15px; }
