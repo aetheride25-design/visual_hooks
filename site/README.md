@@ -38,10 +38,11 @@ The form posts to `api/waitlist.js`, a Vercel function. It adds the email to one
 sets `userGroup`, so it doesn't touch contacts that other products in the same Loops account already have.
 A contact that already exists is only added to the list. No welcome email is sent.
 
-1. In Loops: Audience → Lists → create **Hooks visuales** and copy its ID.
-2. In Vercel: import the repo with **Root Directory** = `site`, and add two environment variables:
+1. The Loops list **Hooks visuales** already exists (private is fine: the API key can add to it).
+2. In Vercel: import the repo with **Root Directory** = `site`, and add two environment variables
+   (see `.env.example`):
    - `LOOPS_API_KEY` (Loops → Settings → API)
-   - `LOOPS_HOOKS_LIST_ID` (the list ID from step 1)
+   - `LOOPS_HOOKS_LIST_ID` = `cmv1i8zk10gxa0j10ety2c0uv`
 
 On a host without functions (GitHub Pages, `python3 -m http.server`) the form just says the list opens soon.
 
