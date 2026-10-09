@@ -1,7 +1,7 @@
 // Effect gallery: search, filter by kind and a card per effect with a still of it (it plays on hover).
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Player, Thumbnail } from '@remotion/player';
-import { baseDefaults, canvasOf, defaultsFor, durationInFrames } from '../../src/registry.ts';
+import { baseDefaults, canvasOf, defaultsFor, durationInFrames, modProblems } from '../../src/registry.ts';
 import { shells } from '../../src/shell.tsx';
 import { tr, type Lang } from '../../src/lib/i18n.ts';
 import type { BgProps } from '../../src/lib/background.ts';
@@ -176,6 +176,16 @@ export const Gallery: React.FC<{
         })}
         {shown.length === 0 && <p className="empty">{t('noMatches')}</p>}
       </div>
+      {modProblems.length > 0 && (
+        <div className="job error">
+          <span>{t('modProblems', { n: modProblems.length })}</span>
+          {modProblems.map((m, i) => (
+            <code key={i}>
+              mods/{m.folder}: {m.message}
+            </code>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

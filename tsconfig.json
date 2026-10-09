@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src", "app", "server", "scripts", "vite.config.ts"]
+  "include": ["src", "app", "server", "scripts", "mods", "vite.config.ts"]
 }

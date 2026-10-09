@@ -7,6 +7,9 @@ dist/
 build/
 out/
 *.log
+
+# Mods: the index is generated from the folders in mods/
+mods/index.generated.ts
 .env
 .env.*
 assets/**/*.mp4

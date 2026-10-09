@@ -24,8 +24,10 @@ import { mysteryCards } from './effects/support/MysteryCards.tsx';
 import { splitScreen } from './effects/support/SplitScreen.tsx';
 import { textCard } from './effects/support/TextCard.tsx';
 import { namelessIdea } from './effects/pieces/NamelessIdea.tsx';
+import { collectMods } from './lib/mods.ts';
+import { modules } from '../mods/index.generated.ts';
 
-export const effects: EffectDef<any>[] = [
+const core: EffectDef<any>[] = [
   // Your video as is (to add captions only)
   noEffect,
   // A. Visual hooks (0–2 s)
@@ -51,6 +53,12 @@ export const effects: EffectDef<any>[] = [
   // C. Animated pieces (they don't go over a video)
   namelessIdea,
 ];
+
+/** Effects from the mods/ folder that load fine, and the ones that don't (with the reason). */
+const mods = collectMods(modules, core.map((e) => e.id));
+export const modProblems = mods.problems;
+
+export const effects: EffectDef<any>[] = [...core, ...mods.effects];
 
 export const findEffect = (id: string): EffectDef<any> | undefined => effects.find((e) => e.id === id);
 

@@ -29,6 +29,7 @@ const strings = {
   filterPieces: { en: 'Pieces', es: 'Piezas' },
   filterMods: { en: 'Mods', es: 'Mods' },
   modBadge: { en: 'MOD', es: 'MOD' },
+  modProblems: { en: 'Mods that couldn’t load ({n}):', es: 'Mods que no se pudieron cargar ({n}):' },
   groupBase: { en: 'Captions only', es: 'Solo subtítulos' },
   notWithThis: { en: 'Not with this file', es: 'No con este archivo' },
   noMatches: { en: 'No effect matches. Try another word.', es: 'Ningún efecto coincide. Prueba otra palabra.' },

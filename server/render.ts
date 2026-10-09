@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { bundle } from '@remotion/bundler';
 import { makeCancelSignal, renderFrames, renderMedia, selectComposition } from '@remotion/renderer';
+import { MODS_DIR } from './mods.ts';
 
 export type ExportFormat = 'mp4' | 'prores' | 'png';
 /** ×2 renders 2160×3840 instead of 1080×1920: for 4K footage, so it keeps its detail. */
@@ -32,7 +33,8 @@ const newestMtime = (dir: string): number =>
   }, 0);
 
 const getBundle = (): Promise<string> => {
-  const stamp = newestMtime(SRC);
+  // Mods live outside src/: a new or edited mod also needs a fresh bundle.
+  const stamp = Math.max(newestMtime(SRC), fs.existsSync(MODS_DIR) ? newestMtime(MODS_DIR) : 0);
   if (!cached || cached.stamp !== stamp) {
     const url = bundle({ entryPoint: ENTRY });
     // On failure, forget only this bundle (not a newer one that already replaced it).
