@@ -1,6 +1,6 @@
 // Where the "Cloud version coming soon" email form posts.
-// Leave it empty until a form service is chosen: the form then only says it isn't open yet.
-// Any service that accepts a JSON POST with an `email` field works (Formspree, Buttondown, a Google Apps Script…).
+// /api/waitlist is the Vercel function in api/waitlist.js, which adds the email to a Loops list.
+// It only exists when the site runs on Vercel (see README.md). Empty = the form says the list isn't open yet.
 window.SITE_CONFIG = {
-  waitlistEndpoint: '',
+  waitlistEndpoint: '/api/waitlist',
 };

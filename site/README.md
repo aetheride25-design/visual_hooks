@@ -7,7 +7,8 @@ The project's website: one static page, English and Spanish, no build step.
 | `index.html` | the page (English texts are written here too, for crawlers and no-JS visitors) |
 | `i18n.js` | every text in English and Spanish |
 | `effects.js` | the effect gallery: one line per effect |
-| `config.js` | where the "Cloud version coming soon" email form posts (empty = the form isn't open yet) |
+| `config.js` | where the "Cloud version coming soon" email form posts (`/api/waitlist`) |
+| `api/waitlist.js` | Vercel function that adds the email to a Loops mailing list (tests in `tests/`) |
 | `styles.css` | Aurora palette, same colors as the app |
 | `media/` | demo, caption clips and one clip + poster per effect |
 
@@ -31,7 +32,26 @@ Then open http://localhost:8088 (`?lang=es` forces Spanish).
 
    Leave out the id to re-render all of them.
 
+## Email list (Loops)
+
+The form posts to `api/waitlist.js`, a Vercel function. It adds the email to one Loops **mailing list** and never
+sets `userGroup`, so it doesn't touch contacts that other products in the same Loops account already have.
+A contact that already exists is only added to the list. No welcome email is sent.
+
+1. In Loops: Audience → Lists → create **Hooks visuales** and copy its ID.
+2. In Vercel: import the repo with **Root Directory** = `site`, and add two environment variables:
+   - `LOOPS_API_KEY` (Loops → Settings → API)
+   - `LOOPS_HOOKS_LIST_ID` (the list ID from step 1)
+
+On a host without functions (GitHub Pages, `python3 -m http.server`) the form just says the list opens soon.
+
+```bash
+node --test site/tests/*.test.js
+```
+
 ## Publish
 
-`.github/workflows/pages.yml` publishes `site/` to GitHub Pages on every push to `main` that touches it,
+On Vercel (above), every push to `main` publishes it, and the email form works.
+
+Or GitHub Pages, without the email form: `.github/workflows/pages.yml` publishes `site/` to GitHub Pages on every push to `main` that touches it,
 once Pages is on (Settings → Pages → Source: GitHub Actions) and the repository variable `PAGES_ENABLED` is `true`.

@@ -136,17 +136,34 @@
     const endpoint = window.SITE_CONFIG?.waitlistEndpoint;
     if (!endpoint) return say('cloud.closed', false);
     say('cloud.sending', true);
+    const button = form.querySelector('button');
+    button.disabled = true;
+    // Where the visitor came from: ?utm_source, else the referring site, else Direct.
+    const ref = (() => {
+      try {
+        return document.referrer ? new URL(document.referrer).hostname : '';
+      } catch {
+        return '';
+      }
+    })();
+    const source = new URLSearchParams(location.search).get('utm_source') || (ref && ref !== location.hostname ? ref : 'Direct');
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email: input.value, lang }),
+        body: JSON.stringify({ email: input.value, source, website: form.elements.website.value }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      // No function behind the URL (a static preview, or GitHub Pages): the list just isn't open here.
+      if ([404, 405, 501].includes(res.status)) return say('cloud.closed', false);
+      const data = await res.json().catch(() => ({}));
+      if (data.error === 'email') return say('cloud.invalid', false);
+      if (!res.ok || !data.ok) throw new Error(String(res.status));
       form.reset();
-      say('cloud.ok', true);
+      say(data.status === 'existing' ? 'cloud.already' : 'cloud.ok', true);
     } catch {
       say('cloud.error', false);
+    } finally {
+      button.disabled = false;
     }
   });
 
