@@ -345,4 +345,5 @@ kbd {
   .app { height: auto; grid-template-columns: 1fr; grid-template-rows: 56px auto auto auto; grid-template-areas: 'top' 'stage' 'right' 'left'; }
   .col { overflow: visible; }
   .phone { height: 70vh; max-height: none; flex: none; }
+  .cards { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
