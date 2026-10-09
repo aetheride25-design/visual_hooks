@@ -1,6 +1,7 @@
 node_modules/
-media/
-exports/
+# Only the app's working folders at the root (docs/media and site/media hold published media)
+/media/
+/exports/
 .whisper/
 .playwright-mcp/
 dist/
