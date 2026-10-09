@@ -1,6 +1,6 @@
 # Landing
 
-The project's website: one static page, English and Spanish, no build step.
+The project's website, live at https://hooks-visuales.vercel.app: one static page, English and Spanish, no build step.
 
 | File | What it holds |
 |---|---|
