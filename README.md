@@ -21,7 +21,7 @@
 
 <p align="center">
   <a href="docs/media/visual-hooks-demo.mp4"><img src="docs/media/demo.gif" width="720" alt="Visual Hooks demo: drop your video, pick a hook, make it yours and export"></a><br>
-  <sub>Click to watch the full demo with sound · <a href="site/media/demo-en.mp4">vertical version (26 s)</a></sub>
+  <sub>Click to watch the full demo with sound</sub>
 </p>
 
 ## Quick start

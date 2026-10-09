@@ -21,7 +21,7 @@
 
 <p align="center">
   <a href="docs/media/visual-hooks-demo.mp4"><img src="docs/media/demo.gif" width="720" alt="Demo de Hooks visuales: sueltas tu video, eliges un hook, lo ajustas y exportas"></a><br>
-  <sub>Haz clic para ver el demo completo con sonido (en inglés) · <a href="site/media/demo-es.mp4">versión vertical en español (26 s)</a></sub>
+  <sub>Haz clic para ver el demo completo con sonido (en inglés)</sub>
 </p>
 
 ## Empezar
