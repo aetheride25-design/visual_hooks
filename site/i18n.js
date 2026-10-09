@@ -29,7 +29,7 @@ window.I18N = {
     'effects.pieces': 'Animated pieces',
     'effects.mods': 'Mods',
     'effects.more':
-      'Missing one? Effects are plain React files. <a href="https://github.com/aetheride25-design/visual_hooks#add-a-new-effect" target="_blank" rel="noopener">Add your own</a> and send a PR.',
+      'Missing one? Make your own as a mod: <code>pnpm new-mod "my effect"</code> creates a folder that already works. <a href="https://github.com/aetheride25-design/visual_hooks/blob/main/docs/mods.md" target="_blank" rel="noopener">Read the mods guide</a>.',
     'captions.eyebrow': 'Auto-captions',
     'captions.title': 'Captions that move <em>with the voice</em>.',
     'captions.sub': 'Whisper transcribes your video on your own PC, word by word. Fix any word, pick a style, and burn them in or download SRT / VTT.',
@@ -126,7 +126,7 @@ window.I18N = {
     'effects.pieces': 'Piezas animadas',
     'effects.mods': 'Mods',
     'effects.more':
-      '¿Te falta uno? Los efectos son archivos de React. <a href="https://github.com/aetheride25-design/visual_hooks/blob/main/README.es.md" target="_blank" rel="noopener">Crea el tuyo</a> y manda un PR.',
+      '¿Te falta uno? Créalo como mod: <code>pnpm new-mod "mi efecto"</code> arma una carpeta que ya funciona. <a href="https://github.com/aetheride25-design/visual_hooks/blob/main/docs/mods.es.md" target="_blank" rel="noopener">Lee la guía de mods</a>.',
     'captions.eyebrow': 'Subtítulos automáticos',
     'captions.title': 'Subtítulos que siguen <em>tu voz</em>.',
     'captions.sub': 'Whisper transcribe tu video en tu propia PC, palabra por palabra. Corrige lo que quieras, elige un estilo y quémalos en el video o descarga SRT / VTT.',
