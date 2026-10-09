@@ -1,5 +1,4 @@
 node_modules/
-# Only the app's working folders at the root (docs/media and site/media hold published media)
 /media/
 /exports/
 .whisper/
