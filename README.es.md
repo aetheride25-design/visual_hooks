@@ -46,7 +46,7 @@ Los ids están en inglés; en la app cada efecto aparece con su nombre en españ
 - **Node.js 22.18 o más nuevo**: el servidor corre `server/index.ts` directo, con el soporte de TypeScript que trae Node.
 - **pnpm** (`npm install -g pnpm`).
 - **FFmpeg** con `ffprobe` en el `PATH`. Lee tus archivos, convierte los ProRes que subas para que el navegador los
-  reproduzca y saca el audio para los subtítulos. Los exports usan el FFmpeg que trae Remotion.
+  reproduzca y saca el audio para los subtítulos. Los exports usan el FFmpeg que trae Remotion; el export rápido de videos largos usa el tuyo.
 - Probado en **Windows 11**. En otros sistemas debería funcionar, pero las fuentes de la interfaz son las de Windows
   (Segoe UI Variable, Georgia, Cascadia Code), así que en otra PC los efectos pueden verse un poco distintos.
   Las fuentes de los subtítulos (Montserrat y Bangers) vienen dentro del proyecto y se ven igual en todas partes.
@@ -82,6 +82,14 @@ Con un **video** elegido, en **Tiempo → ¿Qué exportas?** hay dos modos:
 
 Con una **imagen** no hay línea de tiempo: el export dura lo que el efecto. Con un **audio** el export dura lo que el
 audio, sobre el fondo elegido; solo sirven las tarjetas, los subtítulos y "Sin efecto".
+
+**Los videos largos se exportan rápido.** Con "Aplicar a mi video", Remotion solo dibuja el tramo que cambia (el efecto,
+y los subtítulos si están activados). FFmpeg une el resto de tu video alrededor, con tu audio original debajo. Si tu
+video ya es vertical en H.264 con el tamaño y los fps del export, el resto se copia tal cual: un video de 1 hora con un
+hook de 5 s tarda más o menos lo que el hook. Si no, FFmpeg recodifica el resto, que aun así es varias veces más rápido
+que dibujar cada cuadro. El render completo se sigue usando para ProRes y PNG, cuando los subtítulos cubren todo el
+video y cuando un fondo animado se ve alrededor de tu video (un video horizontal con "Completa"; elige el fondo Sólido
+o "Llenar pantalla" para ir por el camino rápido).
 
 ### Subtítulos automáticos
 

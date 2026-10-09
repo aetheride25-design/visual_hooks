@@ -44,7 +44,7 @@ Made by [@chitodev](https://x.com/chitodev) · Built with [Remotion](https://www
 - **Node.js 22.18 or newer**: the server runs `server/index.ts` directly with Node's built-in TypeScript support.
 - **pnpm** (`npm install -g pnpm`).
 - **FFmpeg** with `ffprobe` on your `PATH`. It reads your media, converts ProRes uploads so the browser can play them,
-  and extracts audio for captions. The exports themselves use the FFmpeg bundled with Remotion.
+  and extracts audio for captions. Exports use the FFmpeg bundled with Remotion; the fast export of long videos uses yours.
 - Tested on **Windows 11**. Other systems should work, but the UI fonts are Windows system fonts
   (Segoe UI Variable, Georgia, Cascadia Code), so the effects may look slightly different on another PC.
   The caption fonts (Montserrat and Bangers) ship with the project and look the same everywhere.
@@ -80,6 +80,14 @@ With a **video** selected, **Time → What do you export?** has two modes:
 
 With an **image** there's no timeline: the export lasts as long as the effect. With an **audio** file the export lasts
 as long as the audio, over the chosen background; only cards, captions and "No effect" apply.
+
+**Long videos export fast.** With "Apply to my video", only the span that changes (the effect, plus the captions if
+they're on) is drawn by Remotion. FFmpeg joins the rest of your video around it, with your original audio underneath.
+If your video is already a vertical H.264 at the export's size and fps, the rest is copied as is, so a 1-hour video
+with a 5 s hook takes about as long as the hook. Otherwise FFmpeg re-encodes the rest, which is still several times
+faster than drawing every frame. The full render is still used for ProRes and PNG, when captions cover the whole video,
+and when an animated background shows around your video (a horizontal video with "Whole"; pick the Solid background
+or "Fill screen" to get the fast way).
 
 ### Auto-captions
 
