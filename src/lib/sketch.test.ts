@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handArrow, handEllipse, polylineLength, toPath } from './sketch.ts';
+import { curvePoint, handArrow, handEllipse, polylineLength, toPath } from './sketch.ts';
 
 test('polylineLength adds up the segments', () => {
   assert.equal(polylineLength([{ x: 0, y: 0 }, { x: 3, y: 4 }, { x: 3, y: 10 }]), 11);
@@ -26,4 +26,13 @@ test('handArrow starts at the origin and the tip lands on the target', () => {
 
 test('toPath builds an SVG path starting with M', () => {
   assert.equal(toPath([{ x: 1, y: 2 }, { x: 3.25, y: 4 }]), 'M1.0 2.0 L3.3 4.0');
+});
+
+test('curvePoint starts and ends on the endpoints and bends in between', () => {
+  const from = { x: 0, y: 0 };
+  const to = { x: 100, y: 0 };
+  assert.deepEqual(curvePoint(from, to, 0.25, 0), from);
+  assert.deepEqual(curvePoint(from, to, 0.25, 1), to);
+  assert.notEqual(curvePoint(from, to, 0.25, 0.5).y, 0);
+  assert.equal(curvePoint(from, to, 0, 0.5).y, 0);
 });

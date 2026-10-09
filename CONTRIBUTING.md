@@ -13,7 +13,8 @@ Thanks for wanting to help! The easiest way in is a new hook: each one is a sing
    pnpm install
    pnpm dev   # http://localhost:3210
    ```
-4. Make your change. For a new effect, follow [Add a new effect](README.md#add-a-new-effect).
+4. Make your change. For a new effect, follow [Add a new effect](README.md#add-a-new-effect). To share an effect
+   without changing the app, make it a [mod](docs/mods.md) instead.
 5. Check that everything passes:
    ```sh
    pnpm test

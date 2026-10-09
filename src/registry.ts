@@ -16,6 +16,9 @@ import { redStrike } from './effects/hooks/RedStrike.tsx';
 import { stopwatch } from './effects/hooks/Stopwatch.tsx';
 import { textDrop } from './effects/hooks/TextDrop.tsx';
 import { window3D } from './effects/hooks/Window3D.tsx';
+import { freezeFrame } from './effects/hooks/FreezeFrame.tsx';
+import { spotlight } from './effects/hooks/Spotlight.tsx';
+import { cursorClick } from './effects/hooks/CursorClick.tsx';
 import { beforeAfterWipe } from './effects/support/BeforeAfterWipe.tsx';
 import { bigNumber } from './effects/support/BigNumber.tsx';
 import { endCard } from './effects/support/EndCard.tsx';
@@ -23,6 +26,9 @@ import { floatingWindow } from './effects/support/FloatingWindow.tsx';
 import { mysteryCards } from './effects/support/MysteryCards.tsx';
 import { splitScreen } from './effects/support/SplitScreen.tsx';
 import { textCard } from './effects/support/TextCard.tsx';
+import { commentReply } from './effects/support/CommentReply.tsx';
+import { topList } from './effects/support/TopList.tsx';
+import { poll } from './effects/support/Poll.tsx';
 import { namelessIdea } from './effects/pieces/NamelessIdea.tsx';
 import { collectMods } from './lib/mods.ts';
 import { modules } from '../mods/index.generated.ts';
@@ -42,6 +48,9 @@ const core: EffectDef<any>[] = [
   redStrike,
   promptTyping,
   stopwatch,
+  freezeFrame,
+  spotlight,
+  cursorClick,
   // B. Support effects
   floatingWindow,
   splitScreen,
@@ -50,6 +59,9 @@ const core: EffectDef<any>[] = [
   textCard,
   endCard,
   mysteryCards,
+  commentReply,
+  topList,
+  poll,
   // C. Animated pieces (they don't go over a video)
   namelessIdea,
 ];

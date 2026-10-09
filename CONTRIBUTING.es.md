@@ -13,7 +13,8 @@
    pnpm install
    pnpm dev   # http://localhost:3210
    ```
-4. Haz tu cambio. Para un efecto nuevo, sigue [Agregar un efecto nuevo](README.es.md#agregar-un-efecto-nuevo).
+4. Haz tu cambio. Para un efecto nuevo, sigue [Agregar un efecto nuevo](README.es.md#agregar-un-efecto-nuevo). Para compartir un efecto
+   sin cambiar la app, hazlo como [mod](docs/mods.es.md).
 5. Comprueba que todo pasa:
    ```sh
    pnpm test

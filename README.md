@@ -4,8 +4,9 @@
 
 <p align="center"><img src="docs/media/hero.gif" width="540" alt="The same clip without a hook and with a hook"></p>
 
-**Scroll-stopping first seconds for TikTok, Reels and Shorts.** 20 animated hooks and effects plus auto-captions,
-applied to your own video in a local app, exported as MP4, ProRes 4444 with alpha, or a PNG sequence. Free and open source.
+**Scroll-stopping first seconds for TikTok, Reels and Shorts.** 26 animated hooks and effects plus auto-captions,
+applied to your own video in a local app, exported as MP4, ProRes 4444 with alpha, or a PNG sequence. Free and open source,
+and you can [make your own effects as mods](docs/mods.md).
 
 ```bash
 git clone https://github.com/aetheride25-design/visual_hooks.git && cd visual_hooks
@@ -24,7 +25,14 @@ Made by [@chitodev](https://x.com/chitodev) · Built with [Remotion](https://www
 | <img src="docs/media/focus-snap.gif" width="200"><br>`focus-snap`: starts zoomed in and blurry, snaps into focus | <img src="docs/media/punch-zoom.gif" width="200"><br>`punch-zoom`: hard zoom onto the result, with shake | <img src="docs/media/text-drop.gif" width="200"><br>`text-drop`: heavy words that slam in |
 | <img src="docs/media/window-3d.gif" width="200"><br>`window-3d`: your app pops out in perspective | <img src="docs/media/arrow-circle.gif" width="200"><br>`arrow-circle`: hand-drawn stroke on the key detail | <img src="docs/media/before-after-cut.gif" width="200"><br>`before-after-cut`: hard cut from old to new, with a flash |
 | <img src="docs/media/glitch.gif" width="200"><br>`glitch`: bands and split RGB | <img src="docs/media/notification.gif" width="200"><br>`notification`: a phone-style alert slides down | <img src="docs/media/red-strike.gif" width="200"><br>`red-strike`: "3 hours" crossed out → "10 min" |
-| <img src="docs/media/prompt-typing.gif" width="200"><br>`prompt-typing`: a prompt or command types itself | <img src="docs/media/stopwatch.gif" width="200"><br>`stopwatch`: a clock races and stops at "10:00" | |
+| <img src="docs/media/prompt-typing.gif" width="200"><br>`prompt-typing`: a prompt or command types itself | <img src="docs/media/stopwatch.gif" width="200"><br>`stopwatch`: a clock races and stops at "10:00" | <img src="docs/media/freeze-frame.gif" width="200"><br>`freeze-frame`: "Yep, that's me." Your video freezes and an arrow points at you |
+| <img src="docs/media/spotlight.gif" width="200"><br>`spotlight`: everything goes dark except one detail | <img src="docs/media/cursor-click.gif" width="200"><br>`cursor-click`: a cursor clicks and the camera dives in | |
+
+**Over your video:**
+
+| | | |
+|---|---|---|
+| <img src="docs/media/comment-reply.gif" width="200"><br>`comment-reply`: a viewer's comment pops up, to answer it on camera | <img src="docs/media/top-list.gif" width="200"><br>`top-list`: "3 tools you need", one by one | <img src="docs/media/poll.gif" width="200"><br>`poll`: the bars fill in and the winner lights up |
 
 **Support effects**: `floating-window` (your capture in a card with a label), `split-screen` (two 1080×960 shots),
 `before-after-wipe` (a light curtain reveals the "after"), `big-number` (a counting number), `text-card` (a big phrase),
@@ -45,7 +53,7 @@ Made by [@chitodev](https://x.com/chitodev) · Built with [Remotion](https://www
 
 1. **Drop** your video, image or audio into the left panel. It's copied to `media/`.
    ProRes (which Chrome can't play) is converted with your FFmpeg; your original file isn't touched.
-2. **Click** a hook or effect: it's applied instantly. Each one says what it works with (🎬 video, 🖼 image, 🎵 audio,
+2. **Click** a hook or effect in the gallery (hover to play it, `/` to search): it's applied instantly. Each one says what it works with (🎬 video, 🖼 image, 🎵 audio,
    ✨ text only); the ones that don't fit what you picked are dimmed, with the reason.
 3. Edit texts, colors, duration and speed on the right; the preview updates live.
    - ◀ ▶ under the preview step frame by frame.
@@ -57,6 +65,7 @@ Made by [@chitodev](https://x.com/chitodev) · Built with [Remotion](https://www
    - **ProRes 4444 (.mov)**: transparent background, to layer in DaVinci Resolve or any editor.
    - **PNG sequence**: transparent, one PNG per frame.
 
+The app remembers your last effect, its settings and your transcripts between sessions (in your browser only).
 The UI speaks English and Spanish (ES/EN switch in the header; it follows your browser's language at first).
 Everything runs on your PC: the server only listens on `127.0.0.1` and your files are never uploaded.
 
@@ -108,8 +117,14 @@ If you see black instead of your footage, right-click the clip → *Clip Attribu
 
 ## Add a new effect
 
+**Quickest: a mod.** `pnpm new-mod "my effect"` creates `mods/my-effect/index.tsx` from a working template; the app
+loads it on its own (filter **Mods**). See [the mods guide](docs/mods.md).
+
+**Built into the app:**
+
 1. Create `src/effects/hooks/MyEffect.tsx` (or `src/effects/support/`). Copy a similar one as a starting point.
    Export an `EffectDef` with `id`, `name`, `description`, `defaults`, `params` and `component`.
+   Everything an effect needs (animation helpers, palette, building blocks) is in `src/sdk.ts`.
    `name`, `description` and param labels are `{ en, es }`; sample texts go in English in `defaults` and in Spanish
    in `localized.es`.
 2. Animate **only** from time: `t = timeOf(useCurrentFrame(), fps, speed)`. No `Date.now()`, `Math.random()`
@@ -126,11 +141,14 @@ src/theme.ts            Aurora colors and fonts
 src/lib/                pure logic (animation, layout, text, captions, i18n) + tests
 src/components/         backgrounds, media, window, animated text, captions layer
 src/effects/            hooks/, support/, pieces/ and "No effect"
-src/registry.ts        effect list + shared wrapper: background, your video with audio, effect span and captions
+src/registry.ts         effect list (built-in effects + mods)
+src/shell.tsx           shared wrapper: background, your video with audio, effect span and captions
+src/sdk.ts              everything an effect or mod needs, from one import
+mods/                   your own effects (mods), loaded automatically; sticker-slap/ is the example
 src/remotion/           render entry (one composition per effect)
-app/                    local app (React + Remotion Player)
+app/                    local app (React + Remotion Player): layout/, panels/, state/ (remembered between sessions)
 server/                 local server: uploads, Range serving, Whisper transcription, export with @remotion/renderer
-docs/                   phone camera hooks guide, why Remotion, good first issues
+docs/                   mods guide, phone camera hooks guide, why Remotion, good first issues
 scripts/                README GIFs rendered with the app itself
 ```
 
@@ -139,6 +157,7 @@ scripts/                README GIFs rendered with the app itself
 | `pnpm dev` | opens the app at http://localhost:3210 |
 | `pnpm test` | tests for the pure logic (`node --test`) |
 | `pnpm typecheck` | type-checks with TypeScript |
+| `pnpm new-mod "name"` | creates a new mod in `mods/` from the template |
 | `node scripts/readme-media.ts <clip>` | re-renders the README GIFs through the running app |
 
 ## Known limits

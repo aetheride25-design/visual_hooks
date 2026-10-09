@@ -48,3 +48,12 @@ export const handArrow = (from: Pt, to: Pt, bend = 0.25, steps = 50): { shaft: P
   const wing = (s: number) => [last, { x: last.x - Math.cos(ang + s * 0.5) * len, y: last.y - Math.sin(ang + s * 0.5) * len }];
   return { shaft, head: [wing(1), wing(-1)] };
 };
+
+/** Point at `k` (0–1) along the same curve handArrow draws: from `from` to `to`, bending to one side. */
+export const curvePoint = (from: Pt, to: Pt, bend: number, k: number): Pt => {
+  const ctrl = { x: (from.x + to.x) / 2 - (to.y - from.y) * bend, y: (from.y + to.y) / 2 + (to.x - from.x) * bend };
+  const a = (1 - k) ** 2;
+  const b = 2 * (1 - k) * k;
+  const c = k ** 2;
+  return { x: a * from.x + b * ctrl.x + c * to.x, y: a * from.y + b * ctrl.y + c * to.y };
+};
